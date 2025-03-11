@@ -29,46 +29,6 @@ const setCookies = (res, accessToken, refreshToken) => {
   });
 };
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await sql`
-      SELECT id, name, email, phone_number, role, created_at, updated_at FROM users
-      ORDER BY created_at DESC
-    `;
-
-    console.log("fetched users", users);
-    if (users.length > 0) {
-      res.status(200).json({ success: true, data: users });
-    } else {
-      res
-        .status(404)
-        .json({ success: false, error: "No user found in database" });
-    }
-  } catch (error) {
-    console.log("Error in getAllUsers controller", error);
-    res.status(500).json({ success: false, error: "Internal server error" });
-  }
-};
-
-export const getUserById = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const user = await sql`
-      SELECT id, name, email, phone_number, role, created_at, updated_at FROM users WHERE id = ${id}
-    `;
-
-    if (user.length > 0) {
-      res.status(200).json({ success: true, data: user[0] });
-    } else {
-      res.status(404).json({ success: false, error: "User not found" });
-    }
-  } catch (error) {
-    console.log("Error in getUserById controller", error);
-    res.status(500).json({ success: false, error: "Internal server error" });
-  }
-};
-
 export const signup = async (req, res) => {
   const { name, email, password, phone_number } = req.body;
 

@@ -11,8 +11,8 @@ export const useServiceStore = create((set) => ({
       const response = await axios.get("/services");
       set({ services: response.data.data, loading: false });
     } catch (error) {
-      set({ error: "Failed to fetch products", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch products");
+      set({ error: "Failed to fetch services", loading: false });
+      toast.error(error.response.data.error || "Failed to fetch services");
     }
   },
 }));

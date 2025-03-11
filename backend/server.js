@@ -10,6 +10,7 @@ import { sql } from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
 import serviceRoutes from "./routes/service.route.js";
 import courierRoutes from "./routes/courier.route.js";
+import customerRoutes from "./routes/customer.route.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/couriers", courierRoutes);
+app.use("/api/customers", customerRoutes);
 
 async function initDB() {
   try {

@@ -1,14 +1,14 @@
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
-import { useServiceStore } from "../stores/useServiceStore";
+import { useCustomerStore } from "../stores/useCustomerStore";
 import { useEffect } from "react";
 
-const ServicesList = () => {
-  const { services, getAllServices } = useServiceStore();
+const CustomersList = () => {
+  const { customers, getAllCustomers } = useCustomerStore();
 
   useEffect(() => {
-    getAllServices();
-  }, [getAllServices]);
+    getAllCustomers();
+  }, [getAllCustomers]);
 
   return (
     <motion.div
@@ -36,20 +36,13 @@ const ServicesList = () => {
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
             >
-              Description
+              Email
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"
             >
-              Price
-            </th>
-
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"
-            >
-              Status
+              Phone Number
             </th>
             <th
               scope="col"
@@ -61,39 +54,21 @@ const ServicesList = () => {
         </thead>
 
         <tbody className="bg-gray-800 divide-y divide-gray-700">
-          {services?.map((service, index) => (
-            <tr key={service.id} className="hover:bg-gray-700">
+          {customers?.map((customer, index) => (
+            <tr key={customer.id} className="hover:bg-gray-700">
               <td className="px-6 py-4 whitespace-nowrap text-center">
                 <div className="text-sm text-gray-300">{index + 1}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10">
-                    <img
-                      className="h-10 w-10 rounded-full object-cover"
-                      src={service.image}
-                      alt={service.name}
-                    />
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-white">
-                      {service.name}
-                    </div>
-                  </div>
-                </div>
+              <td className="px-6 py-4 whitespace-nowrap text-start">
+                <div className="text-sm text-gray-300">{customer.name}</div>
               </td>
-              <td className="px-6 py-4 text-start">
-                <div className="text-sm text-gray-300 max-w-[350px] h-12 py-1 overflow-hidden hover:overflow-auto">
-                  {service.description}
-                </div>
+              <td className="px-6 py-4 whitespace-nowrap text-start">
+                <div className="text-sm text-gray-300">{customer.email}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-center">
                 <div className="text-sm text-gray-300">
-                  Rp{new Intl.NumberFormat("id-ID").format(service.price)},00
+                  {customer.phone_number}
                 </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-center">
-                <div className="text-sm text-gray-300">{service.status}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex justify-center ">
@@ -110,4 +85,4 @@ const ServicesList = () => {
   );
 };
 
-export default ServicesList;
+export default CustomersList;

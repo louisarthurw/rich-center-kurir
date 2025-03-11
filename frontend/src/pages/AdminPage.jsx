@@ -1,16 +1,20 @@
-import { BarChart, ClipboardList, Package, Truck } from "lucide-react";
+import { BarChart, ClipboardList, Package, PlusCircle, Truck, User } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import AnalyticsTab from "../components/AnalyticsTab";
 import OrdersList from "../components/OrdersList";
 import ServicesList from "../components/ServicesList";
 import CouriersList from "../components/CouriersList";
+import CustomersList from "../components/CustomersList";
 
 const tabs = [
   { id: "analytics", label: "Analytics", icon: BarChart },
   { id: "orders", label: "Orders", icon: ClipboardList },
   { id: "services", label: "Services", icon: Package },
   { id: "couriers", label: "Couriers", icon: Truck },
+  { id: "customers", label: "Customers", icon: User },
+  { id: "addservice", label: "Add New Service", icon: PlusCircle },
+  { id: "addcourier", label: "Add New Courier", icon: PlusCircle },
 ];
 
 const AdminPage = () => {
@@ -49,6 +53,7 @@ const AdminPage = () => {
         {activeTab === "orders" && <OrdersList />}
         {activeTab === "services" && <ServicesList />}
         {activeTab === "couriers" && <CouriersList />}
+        {activeTab === "customers" && <CustomersList />}
       </div>
     </div>
   );
