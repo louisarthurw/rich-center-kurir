@@ -45,7 +45,7 @@ export const getAllUsers = async (req, res) => {
         .json({ success: false, error: "No user found in database" });
     }
   } catch (error) {
-    console.log("Error in getProducts controller", error);
+    console.log("Error in getAllUsers controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };

@@ -10,10 +10,12 @@ import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+import ServicesPage from "./pages/ServicesPage";
 
 import { useUserStore } from "./stores/useUserStore";
 
 import { Toaster } from "react-hot-toast";
+
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -45,6 +47,7 @@ function App() {
             path="/login"
             element={!user ? <LoginPage /> : <Navigate to="/" />}
           ></Route>
+          <Route path="/services" element={<ServicesPage />}></Route>
           <Route
             path="/secret-dashboard"
             element={

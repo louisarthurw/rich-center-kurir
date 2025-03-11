@@ -1,4 +1,12 @@
-import { UserPlus, LogIn, LogOut, Lock, Package, User2, ClipboardList } from "lucide-react";
+import {
+  UserPlus,
+  LogIn,
+  LogOut,
+  Lock,
+  Package,
+  User2,
+  ClipboardList,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
 
@@ -22,16 +30,16 @@ const Navbar = () => {
               Home
             </Link>
 
+            <Link to={"/services"} className="">
+              <Package
+                className="inline-block mr-1 group-hover:text-emerald-400"
+                size={20}
+              />
+              <span className="hidden sm:inline">Services</span>
+            </Link>
+
             {user && (
               <>
-                <Link to={"/services"} className="">
-                  <Package
-                    className="inline-block mr-1 group-hover:text-emerald-400"
-                    size={20}
-                  />
-                  <span className="hidden sm:inline">Services</span>
-                </Link>
-
                 <Link to={"/profile"} className="">
                   <User2
                     className="inline-block mr-1 group-hover:text-emerald-400"
