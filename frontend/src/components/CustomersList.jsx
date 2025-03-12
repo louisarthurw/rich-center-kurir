@@ -3,13 +3,15 @@ import { Pencil } from "lucide-react";
 import { useCustomerStore } from "../stores/useCustomerStore";
 import { useEffect } from "react";
 
-const CustomersList = () => {
+const CustomersList = ({ onEditCustomer }) => {
   const { customers, getAllCustomers } = useCustomerStore();
 
   useEffect(() => {
     getAllCustomers();
   }, [getAllCustomers]);
 
+  console.log(customers)
+  
   return (
     <motion.div
       className="bg-gray-800 shadow-lg rounded-lg overflow-hidden max-w-6xl mx-auto"
@@ -72,7 +74,10 @@ const CustomersList = () => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex justify-center ">
-                  <button className="text-blue-400 hover:text-blue-300">
+                  <button
+                    className="text-blue-400 hover:text-blue-300"
+                    onClick={() => onEditCustomer(customer.id)}
+                  >
                     <Pencil className="h-5 w-5" />
                   </button>
                 </div>

@@ -5,7 +5,7 @@ export const getAllCouriers = async (req, res) => {
   try {
     const couriers = await sql`
         SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at FROM couriers
-        ORDER BY id DESC
+        ORDER BY id ASC
       `;
 
     console.log("fetched couriers", couriers);
@@ -79,7 +79,7 @@ export const addCourier = async (req, res) => {
     `;
 
     console.log("New courier added:", newCourier);
-    res.status(201).json({ success: true, data: newCourier[0] });
+    res.status(200).json({ success: true, data: newCourier[0] });
   } catch (error) {
     console.log("Error in addCourier controller", error.message);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -91,24 +91,22 @@ export const updateCourier = async (req, res) => {
   const {
     name,
     email,
-    password,
     phone_number,
     address,
-    availability_status,
     role,
     status,
   } = req.body;
 
   try {
     // hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
 
     const updatedCourier = await sql`
       UPDATE couriers
-      SET name = ${name}, email = ${email}, password = ${hashedPassword}, phone_number = ${phone_number}, address = ${address}, availability_status = ${availability_status}, role = ${role}, status = ${status}, updated_at = CURRENT_TIMESTAMP
+      SET name = ${name}, email = ${email}, phone_number = ${phone_number}, address = ${address}, role = ${role}, status = ${status}, updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
-      RETURNING id, name, email, password, phone_number, address, availability_status, role, status, created_at, updated_at
+      RETURNING id, name, email, phone_number, address, role, status, created_at, updated_at
     `;
 
     if (updatedCourier.length === 0) {

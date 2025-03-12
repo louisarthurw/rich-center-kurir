@@ -21,6 +21,28 @@ export const getAllServices = async (req, res) => {
   }
 };
 
+export const getAllActiveServices = async (req, res) => {
+  try {
+    const services = await sql`
+        SELECT id, name, description, price, image, status, created_at, updated_at FROM services
+        WHERE status = 'active'
+        ORDER BY id ASC
+      `;
+
+    console.log("fetched services", services);
+    if (services.length > 0) {
+      res.status(200).json({ success: true, data: services });
+    } else {
+      res
+        .status(404)
+        .json({ success: false, error: "No services found in database" });
+    }
+  } catch (error) {
+    console.log("Error in getAllActiveServices controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 export const getServiceById = async (req, res) => {
   const { id } = req.params;
 

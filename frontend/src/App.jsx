@@ -24,6 +24,8 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
+  // console.log(user)
+
   if (checkingAuth) return <LoadingSpinner />;
 
   return (

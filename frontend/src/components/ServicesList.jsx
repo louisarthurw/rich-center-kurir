@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { Pencil } from "lucide-react";
+import { Pencil, PlusCircle } from "lucide-react";
 import { useServiceStore } from "../stores/useServiceStore";
 import { useEffect } from "react";
 
-const ServicesList = () => {
+const ServicesList = ({ onAddService, onEditService }) => {
   const { services, getAllServices } = useServiceStore();
 
   useEffect(() => {
@@ -12,11 +12,21 @@ const ServicesList = () => {
 
   return (
     <motion.div
-      className="bg-gray-800 shadow-lg rounded-lg overflow-hidden max-w-6xl mx-auto"
+      className="shadow-lg rounded-lg overflow-hidden max-w-6xl mx-auto space-y-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
+      <div className="flex justify-end">
+        <button
+          className="flex items-center px-4 py-2 rounded-md bg-emerald-600 text-white"
+          onClick={onAddService}
+        >
+          <PlusCircle className="mr-2 h-5 w-5" />
+          Add New Service
+        </button>
+      </div>
+
       <table className=" min-w-full divide-y divide-gray-700">
         <thead className="bg-gray-700">
           <tr>
@@ -83,7 +93,7 @@ const ServicesList = () => {
                 </div>
               </td>
               <td className="px-6 py-4 text-start">
-                <div className="text-sm text-gray-300 max-w-[350px] h-12 py-1 overflow-hidden hover:overflow-auto">
+                <div className="text-sm text-gray-300 max-w-[350px] h-12 py-1 overflow-hidden hover:overflow-auto flex items-center">
                   {service.description}
                 </div>
               </td>
@@ -97,7 +107,10 @@ const ServicesList = () => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex justify-center ">
-                  <button className="text-blue-400 hover:text-blue-300">
+                  <button
+                    className="text-blue-400 hover:text-blue-300"
+                    onClick={() => onEditService(service.id)}
+                  >
                     <Pencil className="h-5 w-5" />
                   </button>
                 </div>

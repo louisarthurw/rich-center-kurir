@@ -1,4 +1,4 @@
-import { BarChart, ClipboardList, Package, PlusCircle, Truck, User } from "lucide-react";
+import { BarChart, ClipboardList, Package, Truck, User } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import AnalyticsTab from "../components/AnalyticsTab";
@@ -6,6 +6,11 @@ import OrdersList from "../components/OrdersList";
 import ServicesList from "../components/ServicesList";
 import CouriersList from "../components/CouriersList";
 import CustomersList from "../components/CustomersList";
+import AddCourierForm from "../components/AddCourierForm";
+import EditCourierForm from "../components/EditCourierForm";
+import AddServiceForm from "../components/AddServiceForm";
+import EditServiceForm from "../components/EditServiceForm";
+import EditCustomerForm from "../components/EditCustomerForm";
 
 const tabs = [
   { id: "analytics", label: "Analytics", icon: BarChart },
@@ -13,12 +18,51 @@ const tabs = [
   { id: "services", label: "Services", icon: Package },
   { id: "couriers", label: "Couriers", icon: Truck },
   { id: "customers", label: "Customers", icon: User },
-  { id: "addservice", label: "Add New Service", icon: PlusCircle },
-  { id: "addcourier", label: "Add New Courier", icon: PlusCircle },
 ];
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("analytics");
+
+  const [isAddingCourier, setIsAddingCourier] = useState(false);
+  const [isEditingCourier, setIsEditingCourier] = useState(false);
+  const [courierId, setCourierId] = useState(null);
+
+  const [isAddingService, setIsAddingService] = useState(false);
+  const [isEditingService, setIsEditingService] = useState(false);
+  const [serviceId, setServiceId] = useState(null);
+
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [customerId, setCustomerId] = useState(null);
+
+  const handleEditCourier = (id) => {
+    setCourierId(id);
+    setIsEditingCourier(true);
+  };
+
+  const handleCloseEditCourier = () => {
+    setCourierId(null);
+    setIsEditingCourier(false);
+  };
+
+  const handleEditService = (id) => {
+    setServiceId(id);
+    setIsEditingService(true);
+  };
+
+  const handleCloseEditService = () => {
+    setServiceId(null);
+    setIsEditingService(false);
+  };
+
+  const handleEditCustomer = (id) => {
+    setCustomerId(id);
+    setIsEditingCustomer(true);
+  };
+
+  const handleCloseEditCustomer = () => {
+    setCustomerId(null);
+    setIsEditingCustomer(false);
+  };
 
   return (
     <div className="min-h-100vh text-white relative overflow-hidden">
@@ -51,9 +95,39 @@ const AdminPage = () => {
 
         {activeTab === "analytics" && <AnalyticsTab />}
         {activeTab === "orders" && <OrdersList />}
-        {activeTab === "services" && <ServicesList />}
-        {activeTab === "couriers" && <CouriersList />}
-        {activeTab === "customers" && <CustomersList />}
+
+        {activeTab === "services" &&
+          (isAddingService ? (
+            <AddServiceForm onClose={() => setIsAddingService(false)} />
+          ) : isEditingService ? (
+            <EditServiceForm id={serviceId} onClose={handleCloseEditService} />
+          ) : (
+            <ServicesList
+              onAddService={() => setIsAddingService(true)}
+              onEditService={handleEditService}
+            />
+          ))}
+
+        {activeTab === "couriers" &&
+          (isAddingCourier ? (
+            <AddCourierForm onClose={() => setIsAddingCourier(false)} />
+          ) : isEditingCourier ? (
+            <EditCourierForm id={courierId} onClose={handleCloseEditCourier} />
+          ) : (
+            <CouriersList
+              onAddCourier={() => setIsAddingCourier(true)}
+              onEditCourier={handleEditCourier}
+            />
+          ))}
+
+        {activeTab === "customers" &&
+          (isEditingCustomer ? (
+            <EditCustomerForm id={customerId} onClose={handleCloseEditCustomer} />
+          ) : (
+            <CustomersList
+              onEditCustomer={handleEditCustomer}
+            />
+          ))}
       </div>
     </div>
   );

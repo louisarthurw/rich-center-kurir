@@ -3,11 +3,11 @@ import { useServiceStore } from "../stores/useServiceStore";
 import ServiceCard from "../components/ServiceCard";
 
 const ServicesPage = () => {
-  const { getAllServices, services } = useServiceStore();
+  const { getAllActiveServices, services } = useServiceStore();
 
   useEffect(() => {
-    getAllServices();
-  }, [getAllServices]);
+    getAllActiveServices();
+  }, [getAllActiveServices]);
 
   return (
     <div className="relative min-h-100vh text-white overflow-hidden">
