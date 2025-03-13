@@ -120,7 +120,7 @@ const ProfilePage = ({ id }) => {
             <button
               type="button"
               className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
-              onClick={() => navigate(`/profile/change-password/${id}`)}
+              onClick={() => navigate(`/profile/change-password`)}
             >
               <Lock className="mr-2 h-5 w-5" />
               Change Password

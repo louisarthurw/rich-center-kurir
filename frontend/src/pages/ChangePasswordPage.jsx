@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Lock, Loader, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCustomerStore } from "../stores/useCustomerStore";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
 
-const ChangePasswordPage = () => {
-  const { id } = useParams();
+const ChangePasswordPage = ({ id }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -15,19 +14,12 @@ const ChangePasswordPage = () => {
     confirmPassword: "",
   });
 
-  const { user, logout } = useUserStore();
+  const { logout } = useUserStore();
   const { changePassword, loading } = useCustomerStore();
-
-  useEffect(() => {
-    if (user.id != id) {
-      navigate("/profile");
-    }
-  }, [user, id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await changePassword(formData);
-    console.log("p", success);
 
     if (success === true) {
       navigate("/profile");

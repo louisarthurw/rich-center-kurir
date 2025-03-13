@@ -56,8 +56,10 @@ function App() {
             element={!user ? <LoginPage /> : <ProfilePage id={user.id} />}
           ></Route>
           <Route
-            path="/profile/change-password/:id"
-            element={!user ? <LoginPage /> : <ChangePasswordPage />}
+            path="/profile/change-password"
+            element={
+              !user ? <LoginPage /> : <ChangePasswordPage id={user.id} />
+            }
           ></Route>
           <Route
             path="/secret-dashboard"
