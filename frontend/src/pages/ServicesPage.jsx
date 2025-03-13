@@ -10,7 +10,7 @@ const ServicesPage = () => {
   }, [getAllActiveServices]);
 
   return (
-    <div className="relative min-h-100vh text-white overflow-hidden">
+    <div className="relative min-h-[calc(100vh-64px)] text-white overflow-hidden">
       <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-16 py-8 space-y-10">
         <div className="space-y-4">
           <h1 className="text-center text-5xl sm:text-6xl font-bold text-emerald-400 mb-4">

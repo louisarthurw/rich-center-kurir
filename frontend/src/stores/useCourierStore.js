@@ -63,7 +63,7 @@ export const useCourierStore = create((set, get) => ({
       set({ currentCourier: response.data.data });
       toast.success("Courier updated successfully");
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
       console.log("Error in updateCourier function", error);
     } finally {
       set({ loading: false });

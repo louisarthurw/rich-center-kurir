@@ -27,7 +27,7 @@ const EditCustomerForm = ({ onClose, id }) => {
       transition={{ duration: 0.8 }}
     >
       <h2 className="text-2xl font-semibold mb-6 text-emerald-300">
-        Edit Courier
+        Edit Customer
       </h2>
 
       <form

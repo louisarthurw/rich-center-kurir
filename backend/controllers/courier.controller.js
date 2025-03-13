@@ -98,9 +98,21 @@ export const updateCourier = async (req, res) => {
   } = req.body;
 
   try {
-    // hash password
-    // const salt = await bcrypt.genSalt(10);
-    // const hashedPassword = await bcrypt.hash(password, salt);
+    // Cek apakah kurir dengan email/phone_number yang baru sudah ada di database
+    const existingCourier = await sql`
+      SELECT id, email, phone_number FROM couriers 
+      WHERE (email = ${email} OR phone_number = ${phone_number}) AND id != ${id}
+    `;
+
+    // Jika ada kurir lain yang memiliki email/phone_number yang sama, tolak update
+    if (existingCourier.length > 0) {
+      if (existingCourier.some(courier => courier.email === email)) {
+        return res.status(400).json({ message: "Email is already registered by another courier" });
+      }
+      if (existingCourier.some(courier => courier.phone_number === phone_number)) {
+        return res.status(400).json({ message: "Phone number is already registered by another courier" });
+      }
+    }
 
     const updatedCourier = await sql`
       UPDATE couriers

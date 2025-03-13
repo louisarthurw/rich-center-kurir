@@ -11,11 +11,12 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import ServicesPage from "./pages/ServicesPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import { useUserStore } from "./stores/useUserStore";
 
 import { Toaster } from "react-hot-toast";
-
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -24,7 +25,7 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-  // console.log(user)
+  console.log(user);
 
   if (checkingAuth) return <LoadingSpinner />;
 
@@ -37,7 +38,7 @@ function App() {
         </div>
       </div>
 
-      <div className="relative z-50 pt-16">
+      <div className="relative z-50 md:pt-16 pt-24">
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />}></Route>
@@ -50,6 +51,14 @@ function App() {
             element={!user ? <LoginPage /> : <Navigate to="/" />}
           ></Route>
           <Route path="/services" element={<ServicesPage />}></Route>
+          <Route
+            path="/profile"
+            element={!user ? <LoginPage /> : <ProfilePage id={user.id} />}
+          ></Route>
+          <Route
+            path="/profile/change-password/:id"
+            element={!user ? <LoginPage /> : <ChangePasswordPage />}
+          ></Route>
           <Route
             path="/secret-dashboard"
             element={

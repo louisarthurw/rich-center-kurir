@@ -29,7 +29,7 @@ export const useCustomerStore = create((set, get) => ({
       const response = await axios.get(`/customers/${id}`);
       set({
         currentCustomer: response.data.data,
-        formData: response.data.data, // pre-fill form with current product data
+        formData: response.data.data,
       });
     } catch (error) {
       console.log("Error in getCustomer function", error);
@@ -46,10 +46,48 @@ export const useCustomerStore = create((set, get) => ({
       set({ currentCustomer: response.data.data });
       toast.success("Customer updated successfully");
 
-      get().getAllCustomers()
+      get().getAllCustomers();
     } catch (error) {
-      toast.error("Something went wrong");
+      toast.error(error.response.data.message || "Something went wrong");
       console.log("Error in updateCustomer function", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+  updateProfile: async (id) => {
+    set({ loading: true });
+    try {
+      const { formData } = get();
+      const response = await axios.put(`/customers/${id}`, formData);
+      set({ currentCustomer: response.data.data });
+      toast.success("Profile updated successfully");
+      get().getAllCustomers();
+    } catch (error) {
+      get().getCustomer(id);
+      toast.error(error.response.data.message || "Something went wrong");
+      console.log("Error in updateProile function", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+  changePassword: async ({ id, password, confirmPassword }) => {
+    set({ loading: true });
+
+    if (password !== confirmPassword) {
+      set({ loading: false });
+      return toast.error("Passwords do not match");
+    }
+
+    try {
+      const response = await axios.put(`/customers/password/${id}`, {
+        password,
+      });
+      toast.success(response.data.message);
+      return true
+    } catch (error) {
+      toast.error(error.response.data.message || "Something went wrong");
+      console.log("Error in changePassword function", error);
+      return false
     } finally {
       set({ loading: false });
     }

@@ -65,7 +65,7 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="min-h-100vh text-white relative overflow-hidden">
+    <div className="min-h-[calc(100vh-64px)] text-white relative overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 py-6">
         <motion.h1
           className="text-4xl font-bold mb-8 text-emerald-400 text-center"
