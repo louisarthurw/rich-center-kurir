@@ -10,6 +10,7 @@ import {
   Trash,
   Plus,
   Loader,
+  NotepadText,
 } from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
@@ -21,10 +22,17 @@ const OrderPage = ({ id }) => {
   const navigate = useNavigate();
 
   // limit date yang bisa dipilih
-  const today = new Date().toISOString().split("T")[0];
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const today = formatter.format(new Date());
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+  const tomorrowStr = formatter.format(tomorrow);
 
   // logic untuk switch dropship
   const [dropship, setDropship] = useState(false);
@@ -46,8 +54,9 @@ const OrderPage = ({ id }) => {
   const [pickupDetails, setPickupDetails] = useState({
     date: "",
     pickup_name: "",
-    pickup_address: "",
     pickup_phone_number: "",
+    pickup_address: "",
+    pickup_notes: "",
     type: "",
     weight: "",
     take_package_on_behalf_of: "",
@@ -96,6 +105,14 @@ const OrderPage = ({ id }) => {
 
   const removeAddress = (index) => {
     setDeliveryDetails(deliveryDetails.filter((_, i) => i !== index));
+  };
+
+  const handleDeliveryDetailsChange = (index, key, value) => {
+    setDeliveryDetails((prevDetails) =>
+      prevDetails.map((detail, i) =>
+        i === index ? { ...detail, [key]: value } : detail
+      )
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -207,6 +224,33 @@ const OrderPage = ({ id }) => {
 
                 <div>
                   <label
+                    htmlFor="pickup_phone_number"
+                    className="block text-sm font-medium text-gray-300"
+                  >
+                    Nomor Telepon
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <input
+                      id="pickup_phone_number"
+                      type="tel"
+                      pattern="[0-9]{10,12}"
+                      required
+                      value={pickupDetails.pickup_phone_number}
+                      onChange={handlePickupDetailsChange}
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      placeholder="08123456789"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
                     htmlFor="pickup_address"
                     className="block text-sm font-medium text-gray-300"
                   >
@@ -233,26 +277,25 @@ const OrderPage = ({ id }) => {
 
                 <div>
                   <label
-                    htmlFor="pickup_phone_number"
+                    htmlFor="pickup_notes"
                     className="block text-sm font-medium text-gray-300"
                   >
-                    Nomor Telepon
+                    Catatan Tambahan (Opsional)
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
+                      <NotepadText
                         className="h-5 w-5 text-gray-400"
                         aria-hidden="true"
                       />
                     </div>
-                    <input
-                      id="pickup_phone_number"
-                      type="tel"
-                      required
-                      value={pickupDetails.pickup_phone_number}
+                    <textarea
+                      id="pickup_notes"
+                      rows={5}
+                      value={pickupDetails.pickup_notes}
                       onChange={handlePickupDetailsChange}
                       className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                      placeholder="08123456789"
+                      placeholder="Rumah pagar coklat / Rumah di sebelah pom bensin"
                     />
                   </div>
                 </div>
@@ -391,64 +434,7 @@ const OrderPage = ({ id }) => {
                         className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                         placeholder="John Doe"
                         value={detail.delivery_name}
-                        onChange={(e) => {
-                          const newDetails = [...deliveryDetails];
-                          newDetails[index].delivery_name = e.target.value;
-                          setDeliveryDetails(newDetails);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">
-                      Alamat
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                        placeholder="Jalan A No. 1"
-                        value={detail.delivery_address}
-                        onChange={(e) => {
-                          const newDetails = [...deliveryDetails];
-                          newDetails[index].delivery_address = e.target.value;
-                          setDeliveryDetails(newDetails);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">
-                      Nomor Telepon
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <input
-                        type="tel"
-                        required
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                        placeholder="08123456789"
-                        value={detail.delivery_phone_number}
-                        onChange={(e) => {
-                          const newDetails = [...deliveryDetails];
-                          newDetails[index].delivery_phone_number =
-                            e.target.value;
-                          setDeliveryDetails(newDetails);
-                        }}
+                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_name", e.target.value)}
                       />
                     </div>
                   </div>
@@ -471,15 +457,56 @@ const OrderPage = ({ id }) => {
                           className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                           placeholder="John Doe"
                           value={detail.sender_name}
-                          onChange={(e) => {
-                            const newDetails = [...deliveryDetails];
-                            newDetails[index].sender_name = e.target.value;
-                            setDeliveryDetails(newDetails);
-                          }}
+                          onChange={(e) => handleDeliveryDetailsChange(index, "sender_name", e.target.value)}
                         />
                       </div>
                     </div>
                   )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">
+                      Alamat
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPin
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        placeholder="Jalan A No. 1"
+                        value={detail.delivery_address}
+                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_address", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">
+                      Nomor Telepon
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <input
+                        type="tel"
+                        pattern="[0-9]{10,12}"
+                        required
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        placeholder="08123456789"
+                        value={detail.delivery_phone_number}
+                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_phone_number", e.target.value)}
+                      />
+                    </div>
+                  </div>
 
                   {/* {index > 0 &&
                     (service_id !== "2" || deliveryDetails.length > 5) && (

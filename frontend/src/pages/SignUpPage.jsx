@@ -109,7 +109,7 @@ const SignUpPage = () => {
                 <input
                   id="phone_number"
                   type="tel"
-                  pattern="[0-9]{10,15}"
+                  pattern="[0-9]{10,12}"
                   required
                   value={formData.phone_number}
                   onChange={(e) =>
