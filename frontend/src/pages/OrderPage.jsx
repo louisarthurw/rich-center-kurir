@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   User,
@@ -9,6 +9,7 @@ import {
   Calendar,
   Trash,
   Plus,
+  Loader,
 } from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
@@ -17,6 +18,7 @@ const OrderPage = ({ id }) => {
   const service_id = useParams().id;
   const user_id = id;
   const loading = false;
+  const navigate = useNavigate();
 
   // limit date yang bisa dipilih
   const today = new Date().toISOString().split("T")[0];
@@ -59,15 +61,26 @@ const OrderPage = ({ id }) => {
     }));
   };
 
+  // Inisialisasi minimal 5 alamat pengiriman jika service kurir mobil dan hanya 1 alamat pengiriman jika service lain
+  const initialAddresses =
+    service_id === "2"
+      ? Array(5).fill({
+          delivery_name: "",
+          delivery_address: "",
+          delivery_phone_number: "",
+          sender_name: "",
+        })
+      : [
+          {
+            delivery_name: "",
+            delivery_address: "",
+            delivery_phone_number: "",
+            sender_name: "",
+          },
+        ];
+
   // menyimpan delivery details
-  const [deliveryDetails, setDeliveryDetails] = useState([
-    {
-      delivery_name: "",
-      delivery_address: "",
-      delivery_phone_number: "",
-      sender_name: "",
-    },
-  ]);
+  const [deliveryDetails, setDeliveryDetails] = useState(initialAddresses);
 
   const addAddress = () => {
     setDeliveryDetails([
@@ -468,7 +481,21 @@ const OrderPage = ({ id }) => {
                     </div>
                   )}
 
-                  {index > 0 && (
+                  {/* {index > 0 &&
+                    (service_id !== "2" || deliveryDetails.length > 5) && (
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => removeAddress(index)}
+                          className="mt-2 flex items-center px-3 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white transition"
+                        >
+                          <Trash className="h-4 w-4 mr-2" />
+                          Hapus Alamat
+                        </button>
+                      </div>
+                    )} */}
+
+                  {(service_id !== "2" && index > 0) ||
+                  (service_id === "2" && index >= 5) ? (
                     <div className="flex justify-end">
                       <button
                         onClick={() => removeAddress(index)}
@@ -478,7 +505,7 @@ const OrderPage = ({ id }) => {
                         Hapus Alamat
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               ))}
 
@@ -493,13 +520,41 @@ const OrderPage = ({ id }) => {
               </div>
             </div>
 
-            <button
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => navigate("/services")}
+                className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+              >
+                Back
+              </button>
+
+              <button
+                type="submit"
+                className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader
+                      className="mr-2 h-5 w-5 animate-spin"
+                      aria-hidden="true"
+                    />
+                    Loading...
+                  </>
+                ) : (
+                  <>Place Order</>
+                )}
+              </button>
+            </div>
+
+            {/* <button
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
               disabled={loading}
             >
               Place Order
-            </button>
+            </button> */}
           </form>
         </div>
       </motion.div>

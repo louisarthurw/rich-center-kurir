@@ -1,6 +1,10 @@
+import { Info } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const ServiceCard = ({ service }) => {
+  const [showPopup, setShowPopup] = useState(false);
+
   return (
     <div className="relative overflow-hidden h-96 w-full rounded-lg group">
       <Link to={"/services/order/" + service.id}>
@@ -16,7 +20,28 @@ const ServiceCard = ({ service }) => {
             <h3 className="text-white text-2xl font-bold mb-1">
               {service.name}
             </h3>
-            <p className="text-gray-200 text-base font-bold">Rp{new Intl.NumberFormat("id-ID").format(service.price)},00</p>
+            <div className="flex items-center justify-between relative">
+              <p className="text-gray-200 text-base font-bold">
+                Rp{new Intl.NumberFormat("id-ID").format(service.price)},00
+              </p>
+
+              <div
+                className="relative"
+                onMouseEnter={() => setShowPopup(true)}
+                onMouseLeave={() => setShowPopup(false)}
+              >
+                <Info
+                  className="cursor-pointer hover:text-emerald-400"
+                  size={20}
+                />
+
+                {showPopup && (
+                  <div className="absolute right-0 bottom-16 w-72 bg-gray-800 text-white text-sm p-3 rounded-md shadow-lg z-30">
+                    {service.description}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </Link>
