@@ -17,6 +17,7 @@ import { useUserStore } from "./stores/useUserStore";
 
 import { Toaster } from "react-hot-toast";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
+import OrderPage from "./pages/OrderPage";
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -54,6 +55,12 @@ function App() {
           <Route
             path="/profile"
             element={!user ? <LoginPage /> : <ProfilePage id={user.id} />}
+          ></Route>
+          <Route
+            path="/services/order/:id"
+            element={
+              !user ? <LoginPage /> : <OrderPage id={user.id} />
+            }
           ></Route>
           <Route
             path="/profile/change-password"
