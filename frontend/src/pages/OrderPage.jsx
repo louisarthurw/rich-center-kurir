@@ -14,11 +14,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
+import { useOrderStore } from "../stores/useOrderStore";
 
 const OrderPage = ({ id }) => {
   const service_id = useParams().id;
   const user_id = id;
-  const loading = false;
+  const { loading, createOrder } = useOrderStore();
   const navigate = useNavigate();
 
   // limit date yang bisa dipilih
@@ -117,10 +118,24 @@ const OrderPage = ({ id }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("user id:", user_id);
-    console.log("service id:", service_id);
-    console.log("pickup_details:", pickupDetails);
-    console.log("delivery_details:", deliveryDetails);
+
+    const success = await createOrder(
+      service_id,
+      user_id,
+      pickupDetails,
+      deliveryDetails
+    );
+
+    console.log("success:", success)
+
+    if (success === true) {
+      navigate("/orders");
+    }
+
+    // console.log("user id:", user_id);
+    // console.log("service id:", service_id);
+    // console.log("pickup_details:", pickupDetails);
+    // console.log("delivery_details:", deliveryDetails);
   };
 
   return (
@@ -434,7 +449,13 @@ const OrderPage = ({ id }) => {
                         className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                         placeholder="John Doe"
                         value={detail.delivery_name}
-                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_name", e.target.value)}
+                        onChange={(e) =>
+                          handleDeliveryDetailsChange(
+                            index,
+                            "delivery_name",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
                   </div>
@@ -457,7 +478,13 @@ const OrderPage = ({ id }) => {
                           className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                           placeholder="John Doe"
                           value={detail.sender_name}
-                          onChange={(e) => handleDeliveryDetailsChange(index, "sender_name", e.target.value)}
+                          onChange={(e) =>
+                            handleDeliveryDetailsChange(
+                              index,
+                              "sender_name",
+                              e.target.value
+                            )
+                          }
                         />
                       </div>
                     </div>
@@ -480,7 +507,13 @@ const OrderPage = ({ id }) => {
                         className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                         placeholder="Jalan A No. 1"
                         value={detail.delivery_address}
-                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_address", e.target.value)}
+                        onChange={(e) =>
+                          handleDeliveryDetailsChange(
+                            index,
+                            "delivery_address",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
                   </div>
@@ -503,7 +536,13 @@ const OrderPage = ({ id }) => {
                         className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                         placeholder="08123456789"
                         value={detail.delivery_phone_number}
-                        onChange={(e) => handleDeliveryDetailsChange(index, "delivery_phone_number", e.target.value)}
+                        onChange={(e) =>
+                          handleDeliveryDetailsChange(
+                            index,
+                            "delivery_phone_number",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
                   </div>

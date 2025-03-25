@@ -11,6 +11,7 @@ import authRoutes from "./routes/auth.route.js";
 import serviceRoutes from "./routes/service.route.js";
 import courierRoutes from "./routes/courier.route.js";
 import customerRoutes from "./routes/customer.route.js";
+import orderRoutes from "./routes/order.route.js";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/couriers", courierRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/orders", orderRoutes);
 
 async function initDB() {
   try {
@@ -69,6 +71,49 @@ async function initDB() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     `;
+    await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        service_id INTEGER NOT NULL REFERENCES services(id),
+        total_address INTEGER NOT NULL,
+        subtotal INTEGER NOT NULL,
+        date DATE NOT NULL,
+        pickup_name VARCHAR(255) NOT NULL,
+        pickup_phone_number VARCHAR(255) NOT NULL,
+        pickup_address VARCHAR(255) NOT NULL,
+        pickup_notes VARCHAR(255),
+        type VARCHAR(255) NOT NULL,
+        weight NUMERIC(5,2) NOT NULL,
+        take_package_on_behalf_of VARCHAR(255),
+        lat NUMERIC(11,7),
+        long NUMERIC(11,7),
+        courier_id VARCHAR(255),
+        visit_order VARCHAR(255),
+        proof_image VARCHAR(255),
+        payment_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
+        order_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
+        address_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`;
+    await sql`
+    CREATE TABLE IF NOT EXISTS order_details (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES orders(id),
+        delivery_name VARCHAR(255) NOT NULL,
+        delivery_address VARCHAR(255) NOT NULL,
+        delivery_phone_number VARCHAR(255) NOT NULL,
+        sender_name VARCHAR(255),
+        lat NUMERIC(11,7),
+        long NUMERIC(11,7),
+        courier_id INTEGER REFERENCES couriers(id),
+        visit_order INTEGER,
+        proof_image VARCHAR(255),
+        address_status VARCHAR(10) NOT NULL DEFAULT 'waiting',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`;
     console.log("Database initialized successfully");
   } catch (error) {
     console.log("Error init DB", error);
