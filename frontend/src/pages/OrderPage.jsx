@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useOrderStore } from "../stores/useOrderStore";
+import Swal from "sweetalert2";
 
 const OrderPage = ({ id }) => {
   const service_id = useParams().id;
@@ -119,23 +120,36 @@ const OrderPage = ({ id }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const success = await createOrder(
-      service_id,
-      user_id,
-      pickupDetails,
-      deliveryDetails
-    );
+    const result = await Swal.fire({
+      title: "Konfirmasi Order",
+      text: "Apakah Anda yakin ingin membuat order ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, buat order!",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#374151"
+    });
 
-    console.log("success:", success)
+    if (result.isConfirmed) {
+      // console.log("user id:", user_id);
+      // console.log("service id:", service_id);
+      // console.log("pickup_details:", pickupDetails);
+      // console.log("delivery_details:", deliveryDetails);
 
-    if (success === true) {
-      navigate("/orders");
+      const success = await createOrder(
+        service_id,
+        user_id,
+        pickupDetails,
+        deliveryDetails
+      );
+
+      // console.log("success:", success);
+
+      if (success === true) {
+        navigate("/orders");
+      }
     }
-
-    // console.log("user id:", user_id);
-    // console.log("service id:", service_id);
-    // console.log("pickup_details:", pickupDetails);
-    // console.log("delivery_details:", deliveryDetails);
   };
 
   return (

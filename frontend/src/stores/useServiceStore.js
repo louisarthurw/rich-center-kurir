@@ -74,6 +74,8 @@ export const useServiceStore = create((set, get) => ({
       const response = await axios.put(`/services/${id}`, formData);
       set({ currentService: response.data.data });
       toast.success("Service updated successfully");
+
+      get().getAllServices();
     } catch (error) {
       toast.error("Something went wrong");
       console.log("Error in updateService function", error);

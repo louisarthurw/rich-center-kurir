@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { useUserStore } from "../stores/useUserStore";
 
 const Navbar = () => {
@@ -19,10 +20,23 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = () => {
-    navigate("/");
-    logout();
-    setIsOpen(false); // Tutup navbar setelah logout
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "Konfirmasi Logout",
+      text: "Apakah Anda yakin ingin logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, keluarkan aku!",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#374151"
+    });
+
+    if (result.isConfirmed) {
+      navigate("/");
+      logout();
+      setIsOpen(false); // Tutup navbar setelah logout
+    }
   };
 
   return (

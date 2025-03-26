@@ -94,17 +94,17 @@ const ServicesList = ({ onAddService, onEditService }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-start">
-                  <div className="text-sm text-gray-300 max-w-[350px] h-12 py-1 overflow-hidden hover:overflow-auto flex items-center">
+                  <div className="text-sm text-gray-300 max-w-[350px]  py-1 overflow-hidden hover:overflow-auto flex items-center">
                     {service.description}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm font-medium text-white">
                     Rp{new Intl.NumberFormat("id-ID").format(service.price)},00
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="text-sm text-gray-300">{service.status}</div>
+                  <div className={`text-sm uppercase font-semibold ${service.status === "active" ? "text-green-500" : "text-red-500"}`}>{service.status}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex justify-center ">

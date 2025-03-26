@@ -62,6 +62,8 @@ export const useCourierStore = create((set, get) => ({
       const response = await axios.put(`/couriers/${id}`, formData);
       set({ currentCourier: response.data.data });
       toast.success("Courier updated successfully");
+
+      get().getAllCouriers();
     } catch (error) {
       toast.error(error.response.data.message || "Something went wrong");
       console.log("Error in updateCourier function", error);

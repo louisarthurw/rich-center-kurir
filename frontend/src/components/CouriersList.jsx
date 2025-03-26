@@ -47,6 +47,12 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
               >
+                Address
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+              >
                 Email
               </th>
               <th
@@ -54,12 +60,6 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                 className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"
               >
                 Phone Number
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider"
-              >
-                Address
               </th>
               <th
                 scope="col"
@@ -91,6 +91,11 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-start">
                   <div className="text-sm text-gray-300">{courier.name}</div>
                 </td>
+                <td className="px-6 py-4 text-start">
+                  <div className="text-sm text-gray-300 max-w-[350px] py-1 overflow-hidden hover:overflow-auto flex items-center">
+                    {courier.address}
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-start">
                   <div className="text-sm text-gray-300">{courier.email}</div>
                 </td>
@@ -100,17 +105,28 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="text-sm text-gray-300">{courier.address}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="text-sm text-gray-300">
+                  <div
+                    className={`text-sm font-semibold uppercase ${
+                      courier.role === "regular"
+                        ? "text-blue-400"
+                        : "text-yellow-500"
+                    } `}
+                  >
                     {courier.role === "regular"
                       ? "Kurir Regular"
                       : "Kurir Khusus"}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="text-sm text-gray-300">{courier.status}</div>
+                  <div
+                    className={`text-sm font-semibold uppercase ${
+                      courier.status === "active"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {courier.status}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex justify-center ">
