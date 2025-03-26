@@ -17,7 +17,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center py-8 sm:px-6 lg:px-8">
+    <div className="flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
       <motion.div
         className="sm:mx-auto sm:w-full sm:max-w-md"
         initial={{ opacity: 0, y: -20 }}

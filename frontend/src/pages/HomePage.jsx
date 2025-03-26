@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const HomePage = () => {
   return (
-    <div className="relative min-h-[calc(100vh-64px)] flex items-center bg-gradient-to-b from-gray-900 to-gray-800 text-white px-6">
+    <div className="relative min-h-[calc(100vh-64px)] flex items-center bg-gradient-to-b from-gray-900 to-gray-800 text-white px-6 py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full items-center justify-center">
         {/* Bagian Teks */}
         <div className="text-left">

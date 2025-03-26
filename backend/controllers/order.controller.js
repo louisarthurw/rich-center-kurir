@@ -41,22 +41,30 @@ export const getOrderById = async (req, res) => {
 };
 
 export const getCustomerOrder = async (req, res) => {
-  const { id } = req.params;
+  const id = req.user.id;
 
   try {
     const orders = await sql`
-      SELECT * FROM orders 
-      WHERE user_id = ${id}
-      ORDER BY id DESC
+      SELECT 
+        orders.*, 
+        services.name AS service_name, 
+        services.image AS service_image, 
+        services.price AS service_price
+      FROM orders
+      JOIN services ON orders.service_id = services.id
+      WHERE orders.user_id = ${id}
+      ORDER BY orders.id DESC
     `;
 
-    if (orders.length > 0) {
-      res.status(200).json({ success: true, data: orders });
-    } else {
-      res
-        .status(404)
-        .json({ success: false, error: "Customer's order not found" });
-    }
+    res.status(200).json({ success: true, data: orders });
+
+    // if (orders.length > 0) {
+    //   res.status(200).json({ success: true, data: orders });
+    // } else {
+    //   res
+    //     .status(404)
+    //     .json({ success: false, error: "Customer's order not found" });
+    // }
   } catch (error) {
     console.log("Error in getUserOrder controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });

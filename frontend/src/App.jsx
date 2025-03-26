@@ -12,12 +12,14 @@ import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import ServicesPage from "./pages/ServicesPage";
 import ProfilePage from "./pages/ProfilePage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
+import OrderPage from "./pages/OrderPage";
+import OrderHistoryPage from "./pages/OrderHistoryPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 
 import { useUserStore } from "./stores/useUserStore";
 
 import { Toaster } from "react-hot-toast";
-import ChangePasswordPage from "./pages/ChangePasswordPage";
-import OrderPage from "./pages/OrderPage";
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -39,7 +41,8 @@ function App() {
         </div>
       </div>
 
-      <div className="relative z-50 md:pt-16 pt-24">
+      {/* <div className="relative z-50 md:pt-16 pt-24"> */}
+      <div className="relative z-50 pt-14 md:pt-16">
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />}></Route>
@@ -58,9 +61,15 @@ function App() {
           ></Route>
           <Route
             path="/services/order/:id"
-            element={
-              !user ? <LoginPage /> : <OrderPage id={user.id} />
-            }
+            element={!user ? <LoginPage /> : <OrderPage id={user.id} />}
+          ></Route>
+          <Route
+            path="/orders"
+            element={!user ? <LoginPage /> : <OrderHistoryPage />}
+          ></Route>
+          <Route
+            path="/orders/detail"
+            element={!user ? <LoginPage /> : <OrderDetailPage />}
           ></Route>
           <Route
             path="/profile/change-password"

@@ -139,7 +139,7 @@ const OrderPage = ({ id }) => {
   };
 
   return (
-    <div className="flex flex-col justify-center py-8 sm:px-6 lg:px-8">
+    <div className="flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
       <motion.div
         className="sm:mx-auto sm:w-full sm:max-w-2xl"
         initial={{ opacity: 0, y: -20 }}
@@ -364,7 +364,7 @@ const OrderPage = ({ id }) => {
                       value={pickupDetails.weight}
                       onChange={handlePickupDetailsChange}
                       className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                      placeholder="1.5"
+                      placeholder="1,5"
                     />
                   </div>
                 </div>
