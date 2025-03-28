@@ -25,12 +25,46 @@ export const getOrderById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const order = await sql`
-      SELECT * FROM orders WHERE id = ${id}
+    const pickupDetails = await sql`
+    SELECT 
+      o.*, 
+      s.name AS service_name, 
+      s.image AS service_image, 
+      s.price AS service_price
+    FROM orders o
+    JOIN services s ON o.service_id = s.id
+    WHERE o.id = ${id}
+  `;
+
+    const deliveryDetails = await sql`
+      SELECT 
+        od.id,
+        od.delivery_name,
+        od.delivery_address,
+        od.delivery_phone_number,
+        od.sender_name,
+        od.lat,
+        od.long,
+        od.courier_id,
+        c.name AS courier_name,
+        od.visit_order,
+        od.proof_image,
+        od.address_status
+      FROM order_details od
+      LEFT JOIN couriers c ON od.courier_id = c.id
+      WHERE od.order_id = ${id}
     `;
 
-    if (order.length > 0) {
-      res.status(200).json({ success: true, data: order[0] });
+    console.log(pickupDetails);
+
+    if (pickupDetails.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: {
+          pickup_details: pickupDetails[0],
+          delivery_details: deliveryDetails,
+        },
+      });
     } else {
       res.status(404).json({ success: false, error: "Order not found" });
     }

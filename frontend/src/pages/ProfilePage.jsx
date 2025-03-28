@@ -3,6 +3,8 @@ import { Loader, Save, Lock, Pencil } from "lucide-react";
 import { useCustomerStore } from "../stores/useCustomerStore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../components/LoadingSpinner";
+
 
 const ProfilePage = ({ id }) => {
   const {
@@ -27,6 +29,10 @@ const ProfilePage = ({ id }) => {
     await updateProfile(id);
     setIsEditing(false);
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">

@@ -4,8 +4,52 @@ import axios from "../lib/axios";
 
 export const useOrderStore = create((set, get) => ({
   orders: [],
+  pickup_details: {
+    id: "",
+    user_id: "",
+    service_id: "",
+    total_address: "",
+    subtotal: 0,
+    date: "",
+    pickup_name: "",
+    pickup_phone_number: "",
+    pickup_address: "",
+    pickup_notes: "",
+    type: "",
+    weight: "",
+    take_package_on_behalf_of: "",
+    lat: null,
+    long: null,
+    courier_id: null,
+    visit_order: null,
+    proof_image: null,
+    payment_status: "",
+    order_status: "",
+    address_status: "",
+    created_at: "",
+    updated_at: "",
+    service_name: "",
+    service_image: "",
+    service_price: 0,
+  },
+  delivery_details: [],
   loading: false,
 
+  getOrder: async (id) => {
+    set({ loading: true });
+    try {
+      const response = await axios.get(`/orders/${id}`);
+      set({
+        pickup_details: response.data.data.pickup_details,
+        delivery_details: response.data.data.delivery_details,
+      });
+    } catch (error) {
+      console.log("Error in getOrderById function", error);
+      set({ pickup_details: null, delivery_details: null });
+    } finally {
+      set({ loading: false });
+    }
+  },
   getCustomerOrder: async () => {
     set({ loading: true });
     try {

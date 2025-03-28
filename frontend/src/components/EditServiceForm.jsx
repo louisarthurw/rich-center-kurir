@@ -19,6 +19,10 @@ const EditServiceForm = ({ onClose, id }) => {
 
   console.log(currentService);
 
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <motion.div
       className="bg-gray-800 shadow-lg rounded-lg p-8 mb-8 max-w-xl mx-auto"

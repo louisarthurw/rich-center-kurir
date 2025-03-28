@@ -8,11 +8,11 @@ const HomePage = () => {
         {/* Bagian Teks */}
         <div className="text-left">
           <h1 className="text-4xl sm:text-5xl font-bold text-emerald-400">
-            SELAMAT DATANG DI
+            SELAMAT DATANG DI RICH CENTER KURIR
           </h1>
-          <h1 className="text-4xl sm:text-5xl font-bold text-emerald-400 mt-1">
+          {/* <h1 className="text-4xl sm:text-5xl font-bold text-emerald-400 mt-1">
             RICH CENTER KURIR
-          </h1>
+          </h1> */}
           <p className="text-lg md:text-3xl mt-4 font-semibold">
             Layanan Kurir Daerah Surabaya
           </p>

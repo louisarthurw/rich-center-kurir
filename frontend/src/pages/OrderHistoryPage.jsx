@@ -4,9 +4,11 @@ import { CheckCircle, Clock, List, Truck, XCircle } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import OrderHistoryList from "../components/OrderHistoryList";
+import LoadingSpinner from "../components/LoadingSpinner";
+
 
 const OrderHistoryPage = () => {
-  const { orders, getCustomerOrder } = useOrderStore();
+  const { loading, orders, getCustomerOrder } = useOrderStore();
 
   useEffect(() => {
     getCustomerOrder();
@@ -45,6 +47,10 @@ const OrderHistoryPage = () => {
   ];
 
   const [activeTab, setActiveTab] = useState("all");
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-[calc(100vh-64px)] text-white relative overflow-hidden px-2 sm:px-4">

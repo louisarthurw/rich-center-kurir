@@ -4,11 +4,15 @@ import { useServiceStore } from "../stores/useServiceStore";
 import { useEffect } from "react";
 
 const ServicesList = ({ onAddService, onEditService }) => {
-  const { services, getAllServices } = useServiceStore();
+  const { loading, services, getAllServices } = useServiceStore();
 
   useEffect(() => {
     getAllServices();
   }, [getAllServices]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <motion.div
@@ -104,7 +108,15 @@ const ServicesList = ({ onAddService, onEditService }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className={`text-sm uppercase font-semibold ${service.status === "active" ? "text-green-500" : "text-red-500"}`}>{service.status}</div>
+                  <div
+                    className={`text-sm uppercase font-semibold ${
+                      service.status === "active"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {service.status}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex justify-center ">

@@ -1,13 +1,19 @@
 import { useEffect } from "react";
 import { useServiceStore } from "../stores/useServiceStore";
 import ServiceCard from "../components/ServiceCard";
+import LoadingSpinner from "../components/LoadingSpinner";
+
 
 const ServicesPage = () => {
-  const { getAllActiveServices, services } = useServiceStore();
+  const { loading, getAllActiveServices, services } = useServiceStore();
 
   useEffect(() => {
     getAllActiveServices();
   }, [getAllActiveServices]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="relative min-h-[calc(100vh-64px)] text-white overflow-hidden">

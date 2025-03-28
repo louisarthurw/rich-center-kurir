@@ -4,11 +4,15 @@ import { useCourierStore } from "../stores/useCourierStore";
 import { useEffect } from "react";
 
 const CouriersList = ({ onAddCourier, onEditCourier }) => {
-  const { couriers, getAllCouriers } = useCourierStore();
+  const { loading, couriers, getAllCouriers } = useCourierStore();
 
   useEffect(() => {
     getAllCouriers();
   }, [getAllCouriers]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <motion.div

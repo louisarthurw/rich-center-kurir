@@ -4,13 +4,17 @@ import { useCustomerStore } from "../stores/useCustomerStore";
 import { useEffect } from "react";
 
 const CustomersList = ({ onEditCustomer }) => {
-  const { customers, getAllCustomers } = useCustomerStore();
+  const { loading, customers, getAllCustomers } = useCustomerStore();
 
   useEffect(() => {
     getAllCustomers();
   }, [getAllCustomers]);
 
   console.log(customers);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <motion.div
