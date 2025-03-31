@@ -1,6 +1,7 @@
 import { BarChart, ClipboardList, Package, Truck, User } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import AnalyticsTab from "../components/AnalyticsTab";
 import OrdersList from "../components/OrdersList";
 import ServicesList from "../components/ServicesList";
@@ -21,7 +22,8 @@ const tabs = [
 ];
 
 const AdminPage = () => {
-  const [activeTab, setActiveTab] = useState("analytics");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "analytics");
 
   const [isAddingCourier, setIsAddingCourier] = useState(false);
   const [isEditingCourier, setIsEditingCourier] = useState(false);

@@ -3,9 +3,15 @@ import { sql } from "../config/db.js";
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await sql`
-          SELECT * FROM orders
-          ORDER BY id ASC
-        `;
+      SELECT 
+        orders.*, 
+        services.name AS service_name, 
+        services.image AS service_image, 
+        services.price AS service_price
+      FROM orders
+      JOIN services ON orders.service_id = services.id
+      ORDER BY orders.id DESC
+    `;
 
     console.log("fetched orders", orders);
     if (orders.length > 0) {

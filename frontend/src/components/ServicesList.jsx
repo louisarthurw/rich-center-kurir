@@ -16,7 +16,7 @@ const ServicesList = ({ onAddService, onEditService }) => {
 
   return (
     <motion.div
-      className="shadow-lg rounded-lg overflow-hidden max-w-6xl mx-auto space-y-4"
+      className="shadow-lg overflow-hidden max-w-6xl mx-auto space-y-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
@@ -31,7 +31,7 @@ const ServicesList = ({ onAddService, onEditService }) => {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg overflow-hidden">
         <table className=" min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-700">
             <tr>

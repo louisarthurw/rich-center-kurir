@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import { useOrderStore } from "../stores/useOrderStore";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useUserStore } from "../stores/useUserStore";
 
 const OrderDetailPage = () => {
   const location = useLocation();
@@ -22,8 +23,11 @@ const OrderDetailPage = () => {
 
   const { loading, pickup_details, delivery_details, getOrder } =
     useOrderStore();
+  const { user } = useUserStore();
   const takePackageOnBehalf = pickup_details?.take_package_on_behalf_of !== "";
   const dropship = delivery_details[0]?.sender_name !== "";
+
+  console.log(user.role);
 
   useEffect(() => {
     getOrder(orderId);
@@ -540,7 +544,14 @@ const OrderDetailPage = () => {
             <div className="flex">
               <button
                 type="button"
-                onClick={() => navigate("/orders")}
+                onClick={() =>
+                  navigate(
+                    user.role === "admin" ? "/secret-dashboard" : "/orders",
+                    {
+                      state: { activeTab: "orders" },
+                    }
+                  )
+                }
                 className="w-full flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
               >
                 Back

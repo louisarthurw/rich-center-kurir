@@ -16,7 +16,7 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
 
   return (
     <motion.div
-      className="shadow-lg rounded-lg overflow-hidden max-w-6xl mx-auto space-y-4"
+      className="shadow-lg overflow-hidden max-w-6xl mx-auto space-y-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
@@ -31,7 +31,7 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg overflow-hidden">
         <table className=" min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-700">
             <tr>
@@ -96,7 +96,7 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                   <div className="text-sm text-gray-300">{courier.name}</div>
                 </td>
                 <td className="px-6 py-4 text-start">
-                  <div className="text-sm text-gray-300 max-w-[350px] py-1 overflow-hidden hover:overflow-auto flex items-center">
+                  <div className="text-sm text-gray-300 max-w-[280px] py-1 overflow-hidden hover:overflow-auto flex items-center">
                     {courier.address}
                   </div>
                 </td>

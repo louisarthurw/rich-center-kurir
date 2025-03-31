@@ -35,6 +35,19 @@ export const useOrderStore = create((set, get) => ({
   delivery_details: [],
   loading: false,
 
+
+  getAllOrders: async () => {
+    set({ loading: true });
+    try {
+      const response = await axios.get(`/orders`);
+      set({ orders: response.data.data });
+    } catch (error) {
+      console.log("Error in getAllOrders function", error);
+      set({ orders: null });
+    } finally {
+      set({ loading: false });
+    }
+  },
   getOrder: async (id) => {
     set({ loading: true });
     try {
