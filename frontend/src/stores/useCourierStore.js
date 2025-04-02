@@ -26,6 +26,16 @@ export const useCourierStore = create((set, get) => ({
       toast.error(error.response.data.error || "Failed to fetch couriers");
     }
   },
+  getAvailableCouriers: async () => {
+    set({ loading: true });
+    try {
+      const response = await axios.get("/couriers/available");
+      set({ couriers: response.data.data, loading: false });
+    } catch (error) {
+      set({ error: "Failed to fetch available couriers", loading: false });
+      toast.error(error.response.data.error || "Failed to fetch available couriers");
+    }
+  },
   getCourier: async (id) => {
     set({ loading: true });
     try {

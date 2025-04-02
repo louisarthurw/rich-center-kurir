@@ -35,7 +35,7 @@ export const useOrderStore = create((set, get) => ({
   delivery_details: [],
   loading: false,
 
-
+  setDeliveryDetails: (updatedDetails) => set({ delivery_details: updatedDetails }),
   getAllOrders: async () => {
     set({ loading: true });
     try {

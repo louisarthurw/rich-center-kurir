@@ -9,29 +9,81 @@ import {
   Calendar,
   NotepadText,
   Truck,
+  Loader,
 } from "lucide-react";
 import { useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import { useOrderStore } from "../stores/useOrderStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useUserStore } from "../stores/useUserStore";
+import { useCourierStore } from "../stores/useCourierStore";
 
 const OrderDetailPage = () => {
   const location = useLocation();
   const orderId = location.state?.orderId;
   const navigate = useNavigate();
 
-  const { loading, pickup_details, delivery_details, getOrder } =
-    useOrderStore();
+  const {
+    loading,
+    pickup_details,
+    delivery_details,
+    getOrder,
+    setDeliveryDetails,
+  } = useOrderStore();
   const { user } = useUserStore();
+  const { couriers, getAvailableCouriers } = useCourierStore();
   const takePackageOnBehalf = pickup_details?.take_package_on_behalf_of !== "";
   const dropship = delivery_details[0]?.sender_name !== "";
 
-  console.log(user.role);
+  console.log("start:", delivery_details);
 
   useEffect(() => {
     getOrder(orderId);
   }, [getOrder, orderId]);
+
+  useEffect(() => {
+    getAvailableCouriers();
+  }, [getAvailableCouriers]);
+
+  const handleCourierChange = (index, courierId) => {
+    const updatedDetails = [...delivery_details];
+    updatedDetails[index].courier_id = courierId;
+
+    if (courierId === null) {
+      updatedDetails[index].courier_name = null;
+    } else {
+      const selectedCourier = couriers.find(
+        (courier) => courier.id === courierId
+      );
+      if (selectedCourier) {
+        updatedDetails[index].courier_name = selectedCourier.name;
+      }
+    }
+
+    // Update the delivery details in the store
+    setDeliveryDetails(updatedDetails);
+    console.log("updated delivery details:", updatedDetails);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("submitted");
+
+    // const result = await Swal.fire({
+    //   title: "Konfirmasi Order",
+    //   text: "Apakah Anda yakin ingin membuat order ini?",
+    //   icon: "warning",
+    //   showCancelButton: true,
+    //   confirmButtonText: "Ya, buat order!",
+    //   cancelButtonText: "Batal",
+    //   confirmButtonColor: "#059669",
+    //   cancelButtonColor: "#374151",
+    // });
+
+    // if (result.isConfirmed) {
+
+    // }
+  };
 
   if (!orderId) {
     return <p className="text-red-500">Error: No order selected</p>;
@@ -61,7 +113,7 @@ const OrderDetailPage = () => {
         transition={{ duration: 0.8, delay: 0.2 }}
       >
         <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold text-emerald-300">
                 Detail Service
@@ -499,7 +551,7 @@ const OrderDetailPage = () => {
                     </div>
                   </div>
 
-                  {detail.courier_id && (
+                  {detail.courier_id && user.role === "customer" && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Nama Kurir
@@ -523,6 +575,36 @@ const OrderDetailPage = () => {
                     </div>
                   )}
 
+                  {user.role === "admin" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">
+                        Nama Kurir
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Truck
+                            className="h-5 w-5 text-gray-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <select
+                          className="block w-full px-3 py-2 pl-10 pr-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          value={detail.courier_id || ""}
+                          onChange={(e) =>
+                            handleCourierChange(index, Number(e.target.value))
+                          }
+                        >
+                          <option value={null}>Pilih Kurir</option>
+                          {couriers.map((courier) => (
+                            <option key={courier.id} value={courier.id}>
+                              {courier.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
                   {detail.proof_image && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
@@ -541,7 +623,7 @@ const OrderDetailPage = () => {
               ))}
             </div>
 
-            <div className="flex">
+            <div className="flex space-x-4">
               <button
                 type="button"
                 onClick={() =>
@@ -552,10 +634,32 @@ const OrderDetailPage = () => {
                     }
                   )
                 }
-                className="w-full flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+                className={`${
+                  user.role === "admin" ? "w-1/2" : "w-full"
+                } flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out`}
               >
                 Back
               </button>
+
+              {user.role === "admin" && (
+                <button
+                  type="submit"
+                  className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader
+                        className="mr-2 h-5 w-5 animate-spin"
+                        aria-hidden="true"
+                      />
+                      Loading...
+                    </>
+                  ) : (
+                    <>Save Changes</>
+                  )}
+                </button>
+              )}
             </div>
           </form>
         </div>

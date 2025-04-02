@@ -22,6 +22,32 @@ export const getAllCouriers = async (req, res) => {
   }
 };
 
+export const getAvailableCouriers = async (req, res) => {
+  try {
+    const couriers = await sql`
+        SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at 
+        FROM couriers
+        WHERE availability_status = 'available' 
+          AND role = 'regular' 
+          AND status = 'active'
+        ORDER BY id ASC
+      `;
+
+    console.log("fetched couriers", couriers);
+    res.status(200).json({ success: true, data: couriers });
+    // if (couriers.length > 0) {
+    //   res.status(200).json({ success: true, data: couriers });
+    // } else {
+    //   res
+    //     .status(404)
+    //     .json({ success: false, error: "No available couriers found in database" });
+    // }
+  } catch (error) {
+    console.log("Error in getAvailableCouriers controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 export const getCourierById = async (req, res) => {
   const { id } = req.params;
 
@@ -88,14 +114,7 @@ export const addCourier = async (req, res) => {
 
 export const updateCourier = async (req, res) => {
   const { id } = req.params;
-  const {
-    name,
-    email,
-    phone_number,
-    address,
-    role,
-    status,
-  } = req.body;
+  const { name, email, phone_number, address, role, status } = req.body;
 
   try {
     // Cek apakah kurir dengan email/phone_number yang baru sudah ada di database
@@ -106,11 +125,19 @@ export const updateCourier = async (req, res) => {
 
     // Jika ada kurir lain yang memiliki email/phone_number yang sama, tolak update
     if (existingCourier.length > 0) {
-      if (existingCourier.some(courier => courier.email === email)) {
-        return res.status(400).json({ message: "Email is already registered by another courier" });
+      if (existingCourier.some((courier) => courier.email === email)) {
+        return res
+          .status(400)
+          .json({ message: "Email is already registered by another courier" });
       }
-      if (existingCourier.some(courier => courier.phone_number === phone_number)) {
-        return res.status(400).json({ message: "Phone number is already registered by another courier" });
+      if (
+        existingCourier.some((courier) => courier.phone_number === phone_number)
+      ) {
+        return res
+          .status(400)
+          .json({
+            message: "Phone number is already registered by another courier",
+          });
       }
     }
 
