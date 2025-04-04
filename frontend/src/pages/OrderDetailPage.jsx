@@ -10,9 +10,11 @@ import {
   NotepadText,
   Truck,
   Loader,
+  Home,
 } from "lucide-react";
 import { useEffect } from "react";
 import { Switch } from "@headlessui/react";
+import Swal from "sweetalert2";
 import { useOrderStore } from "../stores/useOrderStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useUserStore } from "../stores/useUserStore";
@@ -29,13 +31,14 @@ const OrderDetailPage = () => {
     delivery_details,
     getOrder,
     setDeliveryDetails,
+    assignKurirManual,
   } = useOrderStore();
   const { user } = useUserStore();
   const { couriers, getAvailableCouriers } = useCourierStore();
   const takePackageOnBehalf = pickup_details?.take_package_on_behalf_of !== "";
   const dropship = delivery_details[0]?.sender_name !== "";
 
-  console.log("start:", delivery_details);
+  console.log(delivery_details)
 
   useEffect(() => {
     getOrder(orderId);
@@ -47,11 +50,12 @@ const OrderDetailPage = () => {
 
   const handleCourierChange = (index, courierId) => {
     const updatedDetails = [...delivery_details];
-    updatedDetails[index].courier_id = courierId;
 
-    if (courierId === null) {
+    if (courierId === null || Number.isNaN(courierId)) {
+      updatedDetails[index].courier_id = null;
       updatedDetails[index].courier_name = null;
     } else {
+      updatedDetails[index].courier_id = courierId;
       const selectedCourier = couriers.find(
         (courier) => courier.id === courierId
       );
@@ -60,29 +64,33 @@ const OrderDetailPage = () => {
       }
     }
 
-    // Update the delivery details in the store
     setDeliveryDetails(updatedDetails);
-    console.log("updated delivery details:", updatedDetails);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("submitted");
+    console.log(delivery_details);
 
-    // const result = await Swal.fire({
-    //   title: "Konfirmasi Order",
-    //   text: "Apakah Anda yakin ingin membuat order ini?",
-    //   icon: "warning",
-    //   showCancelButton: true,
-    //   confirmButtonText: "Ya, buat order!",
-    //   cancelButtonText: "Batal",
-    //   confirmButtonColor: "#059669",
-    //   cancelButtonColor: "#374151",
-    // });
+    const result = await Swal.fire({
+      title: "Konfirmasi Assignment Kurir",
+      text: "Apakah Anda yakin ingin membuat perubahan terhadap assignment kurir?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, benar!",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#374151",
+    });
 
-    // if (result.isConfirmed) {
+    if (result.isConfirmed) {
+      const success = await assignKurirManual(delivery_details);
 
-    // }
+      if (success === true) {
+        navigate("/secret-dashboard", {
+          state: { activeTab: "orders" },
+        });
+      }
+    }
   };
 
   if (!orderId) {
@@ -512,7 +520,7 @@ const OrderDetailPage = () => {
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin
+                        <Home
                           className="h-5 w-5 text-gray-400"
                           aria-hidden="true"
                         />
@@ -527,6 +535,30 @@ const OrderDetailPage = () => {
                       />
                     </div>
                   </div>
+
+                  {detail.lat && detail.long && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">
+                        Titik Koordinat
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <MapPin
+                            className="h-5 w-5 text-gray-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          readOnly
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          placeholder="Jalan A No. 1"
+                          value={`${detail.lat}, ${detail.long}`}
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300">

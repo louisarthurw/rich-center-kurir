@@ -35,7 +35,8 @@ export const useOrderStore = create((set, get) => ({
   delivery_details: [],
   loading: false,
 
-  setDeliveryDetails: (updatedDetails) => set({ delivery_details: updatedDetails }),
+  setDeliveryDetails: (updatedDetails) =>
+    set({ delivery_details: updatedDetails }),
   getAllOrders: async () => {
     set({ loading: true });
     try {
@@ -87,6 +88,22 @@ export const useOrderStore = create((set, get) => ({
       });
 
       toast.success("Order created successfully");
+      return true;
+    } catch (error) {
+      toast.error(error.response.data.error);
+      return false;
+    } finally {
+      set({ loading: false });
+    }
+  },
+  assignKurirManual: async (delivery_details) => {
+    set({ loading: true });
+
+    try {
+      const response = await axios.put(`/orders/assign-courier-manual`, {
+        delivery_details,
+      });
+      toast.success("Courier assignment updated successfully");
       return true;
     } catch (error) {
       toast.error(error.response.data.error);

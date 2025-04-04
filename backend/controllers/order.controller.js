@@ -59,6 +59,7 @@ export const getOrderById = async (req, res) => {
       FROM order_details od
       LEFT JOIN couriers c ON od.courier_id = c.id
       WHERE od.order_id = ${id}
+      ORDER BY od.id ASC
     `;
 
     console.log(pickupDetails);
@@ -180,6 +181,31 @@ export const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in createOrder controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const assignKurirManual = async (req, res) => {
+  const { delivery_details } = req.body;
+
+  try {
+    for (const detail of delivery_details) {
+      const { id, courier_id } = detail;
+
+      await sql`
+          UPDATE order_details
+          SET courier_id = ${courier_id}
+          WHERE id = ${id}
+        `;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Courier assignment updated successfully.",
+      data: delivery_details
+    });
+  } catch (error) {
+    console.log("Error in assignKurirManual controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
