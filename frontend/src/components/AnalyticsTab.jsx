@@ -1,6 +1,13 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Users, Package, ShoppingCart, DollarSign, ClipboardList, Truck } from "lucide-react";
+import { useEffect } from "react";
+import {
+  Users,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  ClipboardList,
+  Truck,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -11,20 +18,44 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useAnalyticsStore } from "../stores/useAnalyticsStore";
 
 const AnalyticsTab = () => {
-  const [analyticsData, setAnalyticsData] = useState({
-    customers: 0,
-    services: 0,
-    couriers: 0,
-    orders: 0,
-    totalSales: 0,
-    totalRevenue: 0,
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [dailySalesData, setDailySalesData] = useState([]);
+  const { loading, analyticsData, salesData, getAnalyticsData, getSalesData } =
+    useAnalyticsStore();
 
-  if (isLoading) {
+  useEffect(() => {
+    getAnalyticsData();
+  }, [getAnalyticsData]);
+
+  useEffect(() => {
+    const getDefaultDateRange = () => {
+      const now = new Date();
+  
+      // Offset GMT+7 dalam menit
+      const gmt7OffsetMinutes = 7 * 60;
+      const localTime = new Date(
+        now.getTime() + (gmt7OffsetMinutes - now.getTimezoneOffset()) * 60 * 1000
+      );
+  
+      const end = new Date(localTime); // hari ini (GMT+7)
+      const start = new Date(localTime);
+      start.setDate(start.getDate() - 7); // 7 hari sebelumnya
+  
+      const format = (date) => date.toISOString().split("T")[0];
+      return {
+        startDate: format(start),
+        endDate: format(end),
+      };
+    };
+  
+    const { startDate, endDate } = getDefaultDateRange();
+  
+    getSalesData({ startDate, endDate });
+  }, [getSalesData]);
+  
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 
@@ -51,8 +82,8 @@ const AnalyticsTab = () => {
             color="from-emerald-500 to-green-700"
           />
           <AnalyticsCard
-            title="Total Successful Orders"
-            value={analyticsData.orders.toLocaleString()}
+            title="Total Addresses"
+            value={analyticsData.addresses.toLocaleString()}
             icon={ClipboardList}
             color="from-emerald-500 to-green-700"
           />
@@ -60,8 +91,8 @@ const AnalyticsTab = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-center">
           <div className="lg:col-start-2">
             <AnalyticsCard
-              title="Total Sales"
-              value={analyticsData.totalSales.toLocaleString()}
+              title="Total Orders"
+              value={analyticsData.totalOrders.toLocaleString()}
               icon={ShoppingCart}
               color="from-emerald-500 to-cyan-700"
             />
@@ -69,13 +100,16 @@ const AnalyticsTab = () => {
           <div>
             <AnalyticsCard
               title="Total Revenue"
-              value={`Rp ${analyticsData.totalRevenue.toLocaleString()}`}
+              value={`Rp${new Intl.NumberFormat("id-ID").format(
+                analyticsData.totalRevenue
+              )}`}
               icon={DollarSign}
               color="from-emerald-500 to-lime-700"
             />
           </div>
         </div>
       </div>
+
       <motion.div
         className="bg-gray-800/60 rounded-lg p-6 shadow-lg"
         initial={{ opacity: 0, y: 20 }}
@@ -83,7 +117,7 @@ const AnalyticsTab = () => {
         transition={{ duration: 0.5, delay: 0.25 }}
       >
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={dailySalesData}>
+          <LineChart data={salesData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" stroke="#D1D5DB" />
             <YAxis yAxisId="left" stroke="#D1D5DB" />

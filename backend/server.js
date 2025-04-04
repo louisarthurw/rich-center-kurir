@@ -12,6 +12,7 @@ import serviceRoutes from "./routes/service.route.js";
 import courierRoutes from "./routes/courier.route.js";
 import customerRoutes from "./routes/customer.route.js";
 import orderRoutes from "./routes/order.route.js";
+import analyticsRoutes from "./routes/analytics.route.js";
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/couriers", courierRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/analytics", analyticsRoutes);
+
 
 async function initDB() {
   try {
