@@ -12,7 +12,12 @@ export const useAnalyticsStore = create((set) => ({
     totalRevenue: 0,
   },
   salesData: [],
+  startDate: "",
+  endDate: "",
   loading: false,
+
+  setStartDate: (date) => set({ startDate: date }),
+  setEndDate: (date) => set({ endDate: date }),
 
   getAnalyticsData: async () => {
     set({ loading: true });
@@ -21,13 +26,17 @@ export const useAnalyticsStore = create((set) => ({
       set({ analyticsData: response.data.data, loading: false });
     } catch (error) {
       set({ error: "Failed to fetch analytics data", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch analytics data");
+      toast.error(
+        error.response.data.error || "Failed to fetch analytics data"
+      );
     }
   },
   getSalesData: async ({ startDate, endDate }) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`/analytics/sales?startDate=${startDate}&endDate=${endDate}`);
+      const response = await axios.get(
+        `/analytics/sales?startDate=${startDate}&endDate=${endDate}`
+      );
       set({ salesData: response.data.data, loading: false });
     } catch (error) {
       set({ error: "Failed to fetch sales data", loading: false });
