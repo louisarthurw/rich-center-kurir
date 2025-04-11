@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { UserPlus, Mail, Lock, User, ArrowRight, Loader, Phone } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  UserPlus,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Loader,
+  Phone,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useUserStore } from "../stores/useUserStore";
 
@@ -10,15 +18,21 @@ const SignUpPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    phone_number: ""
+    phone_number: "",
   });
 
   const { signup, loading } = useUserStore();
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData.email, formData.password);
-    signup(formData);
+
+    const result = await signup(formData);
+
+    if (result.success === true) {
+      navigate("/verify-email", {state: result.data});
+    }
   };
 
   return (

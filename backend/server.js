@@ -36,6 +36,19 @@ app.use("/api/analytics", analyticsRoutes);
 async function initDB() {
   try {
     await sql`
+    CREATE TABLE IF NOT EXISTS auth(
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        phone_number VARCHAR(255) NOT NULL,
+        verification_token VARCHAR(10),
+        expired_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    `;
+    await sql`
     CREATE TABLE IF NOT EXISTS users(
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,

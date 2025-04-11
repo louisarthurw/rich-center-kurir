@@ -247,7 +247,7 @@ const AnalyticsTab = () => {
 
         <div className="mt-4 text-center space-y-1">
           <p className="text-gray-300 font-semibold">
-            Total Sales During This Period:{" "}
+            Total Orders During This Period:{" "}
             {salesData
               .reduce((total, item) => total + item.sales, 0)
               .toLocaleString()}

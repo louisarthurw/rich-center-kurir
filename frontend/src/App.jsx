@@ -16,6 +16,7 @@ import ChangePasswordPage from "./pages/ChangePasswordPage";
 import OrderPage from "./pages/OrderPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
 
 import { useUserStore } from "./stores/useUserStore";
 
@@ -53,6 +54,10 @@ function App() {
           <Route
             path="/login"
             element={!user ? <LoginPage /> : <Navigate to="/" />}
+          ></Route>
+          <Route
+            path="/verify-email"
+            element={!user ? <EmailVerificationPage /> : <Navigate to="/" />}
           ></Route>
           <Route path="/services" element={<ServicesPage />}></Route>
           <Route

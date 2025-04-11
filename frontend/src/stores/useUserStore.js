@@ -6,20 +6,50 @@ export const useUserStore = create((set, get) => ({
   user: null,
   loading: false,
   checkingAuth: true,
+  error: null,
+
   signup: async ({ name, email, password, confirmPassword, phone_number }) => {
     set({ loading: true });
 
     if (password !== confirmPassword) {
       set({ loading: false });
-      return toast.error("Passwords do not match");
+      toast.error("Passwords do not match");
+      return { success: false }
     }
 
     try {
-      const res = await axios.post("/auth/signup", { name, email, password, phone_number });
-      set({ user: res.data.data, loading: false });
+      const res = await axios.post("/auth/signup", {
+        name,
+        email,
+        password,
+        phone_number,
+      });
+      set({ loading: false });
+      return { success: true, data: res.data.data };
+
     } catch (error) {
       set({ loading: false });
       toast.error(error.response.data.message || "An error occurred");
+      return { success: false }
+    }
+  },
+  verifyEmail: async ({ name, email, password, phone_number, code }) => {
+    set({ loading: true });
+
+    try {
+      const res = await axios.post("/auth/verify-email", {
+        name,
+        email,
+        password,
+        phone_number,
+        code,
+      });
+      set({ user: res.data.data, loading: false });
+      return true
+    } catch (error) {
+      set({ loading: false });
+      toast.error(error.response.data.message || "An error occurred");
+      return false
     }
   },
   login: async (email, password) => {

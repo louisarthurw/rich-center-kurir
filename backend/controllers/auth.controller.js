@@ -1,6 +1,7 @@
 import { sql } from "../config/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { sendVerificationEmail } from "../nodemailer/email.js";
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
@@ -37,7 +38,7 @@ export const signup = async (req, res) => {
   }
 
   try {
-    // check if user exists
+    // check apakah user sudah terdafar
     const existingUser = await sql`
       SELECT * FROM users 
       WHERE email = ${email} OR phone_number = ${phone_number} 
@@ -59,22 +60,93 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // create verification token
+    const verificationToken = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Cek apakah sudah ada pending user di tabel auth
+    const pendingUser = await sql`
+      SELECT * FROM auth 
+      WHERE email = ${email} OR phone_number = ${phone_number} 
+      LIMIT 1
+    `;
+
+    let pendingUserResponse;
+
+    if (pendingUser.length > 0) {
+      // Update data pending user yang sudah ada dengan verification code baru dan perbarui expired_at
+      pendingUserResponse = await sql`
+        UPDATE auth
+        SET 
+          verification_token = ${verificationToken},
+          expired_at = NOW() + INTERVAL '15 minutes',
+          password = ${hashedPassword},
+          name = ${name},
+          phone_number = ${phone_number}
+        WHERE id = ${pendingUser[0].id}
+        RETURNING id, name, email, password, phone_number, verification_token, expired_at
+      `;
+    } else {
+      // Insert pending user baru jika belum ada
+      pendingUserResponse = await sql`
+        INSERT INTO auth (name, email, password, phone_number, verification_token, expired_at)
+        VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number}, ${verificationToken}, NOW() + INTERVAL '15 minutes')
+        RETURNING id, name, email, password, phone_number, verification_token, expired_at
+      `;
+    }
+
+    // send verification email
+    await sendVerificationEmail(email, verificationToken);
+
+    res.status(201).json({ success: true, data: pendingUserResponse[0] });
+  } catch (error) {
+    console.log("Error in signup controller", error.message);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const verifyEmail = async (req, res) => {
+  const { name, email, password, phone_number, code } = req.body;
+
+  try {
+    // code verification
+    const result = await sql`
+      SELECT * FROM auth 
+      WHERE email = ${email} AND verification_token = ${code} 
+      AND expired_at > NOW()
+      LIMIT 1
+    `;
+    console.log("result:", result);
+
+    if (result.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification code" });
+    }
+
     // create new user
     const newUser = await sql`
       INSERT INTO users (name, email, password, phone_number, role)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number}, 'customer')
+      VALUES (${name}, ${email}, ${password}, ${phone_number}, 'customer')
       RETURNING id, name, email, phone_number, role
+    `;
+
+    // update table auth set code = null
+    await sql`
+      UPDATE auth
+      SET verification_token = NULL, expired_at = NULL
+      WHERE email = ${email}
     `;
 
     // authenticate
     const { accessToken, refreshToken } = generateTokens(newUser[0].id);
-
     setCookies(res, accessToken, refreshToken);
 
     console.log("New user added:", newUser);
     res.status(201).json({ success: true, data: newUser[0] });
   } catch (error) {
-    console.log("Error in signup controller", error.message);
+    console.log("Error in verifyEmail controller", error.message);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
@@ -111,18 +183,16 @@ export const login = async (req, res) => {
 
     setCookies(res, accessToken, refreshToken);
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: {
-          id: user[0].id,
-          name: user[0].name,
-          email: user[0].email,
-          phone_number: user[0].phone_number,
-          role: user[0].role,
-        },
-      });
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user[0].id,
+        name: user[0].name,
+        email: user[0].email,
+        phone_number: user[0].phone_number,
+        role: user[0].role,
+      },
+    });
   } catch (error) {
     console.log("Error in login controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
