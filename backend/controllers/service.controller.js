@@ -7,7 +7,7 @@ export const getAllServices = async (req, res) => {
         ORDER BY id ASC
       `;
 
-    console.log("fetched services", services);
+    // console.log("fetched services", services);
     if (services.length > 0) {
       res.status(200).json({ success: true, data: services });
     } else {
@@ -29,7 +29,7 @@ export const getAllActiveServices = async (req, res) => {
         ORDER BY id ASC
       `;
 
-    console.log("fetched services", services);
+    // console.log("fetched services", services);
     if (services.length > 0) {
       res.status(200).json({ success: true, data: services });
     } else {

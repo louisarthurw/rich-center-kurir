@@ -12,7 +12,7 @@ import {
   Loader,
   NotepadText,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useOrderStore } from "../stores/useOrderStore";
 import Swal from "sweetalert2";
@@ -20,7 +20,7 @@ import Swal from "sweetalert2";
 const OrderPage = ({ id }) => {
   const service_id = useParams().id;
   const user_id = id;
-  const { loading, createOrder } = useOrderStore();
+  const { loading, createOrder, deleteOrder } = useOrderStore();
   const navigate = useNavigate();
 
   // limit date yang bisa dipilih
@@ -128,29 +128,58 @@ const OrderPage = ({ id }) => {
       confirmButtonText: "Ya, buat order!",
       cancelButtonText: "Batal",
       confirmButtonColor: "#059669",
-      cancelButtonColor: "#374151"
+      cancelButtonColor: "#374151",
     });
 
     if (result.isConfirmed) {
-      // console.log("user id:", user_id);
-      // console.log("service id:", service_id);
-      // console.log("pickup_details:", pickupDetails);
-      // console.log("delivery_details:", deliveryDetails);
-
-      const success = await createOrder(
+      const response = await createOrder(
         service_id,
         user_id,
         pickupDetails,
         deliveryDetails
       );
+      console.log(response);
 
-      // console.log("success:", success);
-
-      if (success === true) {
-        navigate("/orders");
+      if (response.success === true) {
+        window.snap.pay(response.snap_token, {
+          onSuccess: function (result) {
+            console.log("Payment Success", result);
+          },
+          onPending: function (result) {
+            console.log("Payment Pending", result);
+          },
+          onError: function (result) {
+            console.error("Payment Error", result);
+            Swal.fire("Error", "Terjadi kesalahan pembayaran.", "error");
+          },
+          onClose: function () {
+            console.log("Popup closed without finishing the payment");
+            deleteOrder(response.order_id);
+            Swal.fire(
+              "Dibatalkan",
+              "Pembayaran dibatalkan oleh pengguna.",
+              "info"
+            );
+          },
+        });
       }
     }
   };
+
+  useEffect(() => {
+    const midtransScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
+    let scriptTag = document.createElement("script");
+    scriptTag.src = midtransScriptUrl;
+
+    const myMidtransClientKey = "SB-Mid-client-6LcuDTYfOmMJOAOB";
+    scriptTag.setAttribute("data-client-key", myMidtransClientKey);
+
+    document.body.appendChild(scriptTag);
+
+    return () => {
+      document.body.removeChild(scriptTag);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">

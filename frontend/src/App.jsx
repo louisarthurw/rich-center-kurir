@@ -17,10 +17,14 @@ import OrderPage from "./pages/OrderPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
+import PurchasePendingPage from "./pages/PurchasePendingPage";
+import PurchaseSuccessPage from "./pages/PurchaseSuccessPage";
+import PurchaseCancelPage from "./pages/PurchaseCancelPage";
 
 import { useUserStore } from "./stores/useUserStore";
 
 import { Toaster } from "react-hot-toast";
+
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -88,6 +92,18 @@ function App() {
               user?.role === "admin" ? <AdminPage /> : <Navigate to="/login" />
             }
           ></Route>
+          <Route
+            path="/purchase-pending"
+            element={user ? <PurchasePendingPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/purchase-success"
+            element={user ? <PurchaseSuccessPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/purchase-cancel"
+            element={user ? <PurchaseCancelPage /> : <Navigate to="/login" />}
+          />
           {/* <Route path="/category/:category" element={<CategoryPage />}></Route> */}
         </Routes>
 

@@ -38,7 +38,7 @@ const OrderDetailPage = () => {
   const takePackageOnBehalf = pickup_details?.take_package_on_behalf_of !== "";
   const dropship = delivery_details[0]?.sender_name !== "";
 
-  console.log(delivery_details)
+  // console.log(delivery_details)
 
   useEffect(() => {
     getOrder(orderId);
@@ -69,7 +69,7 @@ const OrderDetailPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(delivery_details);
+    // console.log(delivery_details);
 
     const result = await Swal.fire({
       title: "Konfirmasi Assignment Kurir",

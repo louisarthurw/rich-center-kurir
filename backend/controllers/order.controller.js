@@ -1,4 +1,9 @@
 import { sql } from "../config/db.js";
+import dotenv from "dotenv";
+import Midtrans from "midtrans-client";
+import crypto from "crypto";
+
+dotenv.config();
 
 export const getAllOrders = async (req, res) => {
   try {
@@ -117,8 +122,7 @@ export const createOrder = async (req, res) => {
     const { service_id, user_id, pickupDetails, deliveryDetails } = req.body;
 
     // Ambil harga layanan
-    const service =
-      await sql`SELECT price FROM services WHERE id = ${service_id}`;
+    const service = await sql`SELECT * FROM services WHERE id = ${service_id}`;
 
     if (service.length === 0) {
       return res
@@ -150,7 +154,7 @@ export const createOrder = async (req, res) => {
         ${
           pickupDetails.take_package_on_behalf_of
         }, ${null}, ${null}, ${null}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
-      ) RETURNING id;
+      ) RETURNING *;
     `;
 
     const orderId = newOrder[0].id;
@@ -174,16 +178,153 @@ export const createOrder = async (req, res) => {
 
     await Promise.all(orderDetailsQueries);
 
+    // create payment midtrans
+    const secret = process.env.MIDTRANS_SERVER_KEY;
+    const encodedSecret = Buffer.from(secret).toString("base64");
+
+    const response = await fetch(
+      `https://app.sandbox.midtrans.com/snap/v1/transactions`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Basic ${encodedSecret}`,
+        },
+        body: JSON.stringify({
+          transaction_details: {
+            order_id: orderId,
+            gross_amount: newOrder[0].subtotal,
+          },
+          item_details: [
+            {
+              id: service[0].id,
+              name: service[0].name,
+              price: service[0].price,
+              quantity: newOrder[0].total_address,
+            },
+          ],
+        }),
+      }
+    );
+
+    const snapData = await response.json();
+
     res.status(201).json({
       success: true,
       message: "Order created successfully",
       order_id: orderId,
+      snap_token: snapData.token,
     });
   } catch (error) {
     console.log("Error in createOrder controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+
+export const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    console.log(id);
+
+    const order = await sql`SELECT * FROM orders WHERE id = ${id}`;
+
+    console.log(order);
+    if (order.length === 0) {
+      return res.status(404).json({ success: false, error: "Order not found" });
+    }
+
+    await sql`DELETE FROM order_details WHERE order_id = ${id}`;
+
+    await sql`DELETE FROM orders WHERE id = ${id}`;
+
+    res.status(200).json({
+      success: true,
+      message: `Order with ID ${id} and its details have been deleted successfully.`,
+    });
+  } catch (error) {
+    console.error("Error in deleteOrder controller:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const handleMidtransWebhook = async (req, res) => {
+  try {
+    const {
+      order_id,
+      transaction_status: transactionStatus,
+      fraud_status: fraudStatus,
+      status_code,
+      gross_amount,
+      signature_key: signatureKeyFromMidtrans,
+    } = req.body;
+
+
+    // Buat signature_key kita sendiri
+    const serverKey = process.env.MIDTRANS_SERVER_KEY;
+    const rawSignature = order_id + status_code + gross_amount + serverKey;
+    const generatedSignatureKey = crypto
+      .createHash("sha512")
+      .update(rawSignature)
+      .digest("hex");
+
+    // Verifikasi signature
+    if (signatureKeyFromMidtrans !== generatedSignatureKey) {
+      console.warn("Invalid signature key from Midtrans");
+      return res.status(403).json({ success: false, error: "Invalid signature key" });
+    }
+
+    // Tentukan payment status berdasarkan status dari Midtrans
+    let paymentStatus = "waiting";
+
+    if (transactionStatus === "capture") {
+      if (fraudStatus === "accept") {
+        paymentStatus = "paid";
+      } else {
+        paymentStatus = "waiting";
+      }
+    } else if (transactionStatus === "settlement") {
+      paymentStatus = "paid";
+    } else if (
+      transactionStatus === "cancel" ||
+      transactionStatus === "deny" ||
+      transactionStatus === "expire"
+    ) {
+      paymentStatus = "failed";
+    } else if (transactionStatus === "pending") {
+      paymentStatus = "waiting";
+    }
+
+    // Cek apakah order ada
+    const order = await sql`SELECT * FROM orders WHERE id = ${order_id}`;
+    if (order.length === 0) {
+      return res.status(404).json({ success: false, error: "Order not found" });
+    }
+
+    // Update payment status
+    await sql`
+      UPDATE orders
+      SET payment_status = ${paymentStatus}
+      WHERE id = ${order_id}
+    `;
+
+    // Jika gagal, update semua address_status jadi 'cancelled'
+    if (paymentStatus === "failed") {
+      await sql`
+        UPDATE order_details
+        SET address_status = 'cancelled'
+        WHERE order_id = ${order_id}
+      `;
+    }
+
+    res.status(200).json({ success: true, message: "Payment status updated" });
+  } catch (error) {
+    console.error("Error in Midtrans webhook:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 
 export const assignKurirManual = async (req, res) => {
   const { delivery_details } = req.body;
@@ -202,7 +343,7 @@ export const assignKurirManual = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Courier assignment updated successfully.",
-      data: delivery_details
+      data: delivery_details,
     });
   } catch (error) {
     console.log("Error in assignKurirManual controller", error);

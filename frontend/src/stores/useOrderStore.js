@@ -88,10 +88,30 @@ export const useOrderStore = create((set, get) => ({
       });
 
       toast.success("Order created successfully");
-      return true;
+
+      return {
+        success: true,
+        snap_token: res.data.snap_token,
+        order_id: res.data.order_id,
+      };
     } catch (error) {
       toast.error(error.response.data.error);
-      return false;
+      return { success: false };
+    } finally {
+      set({ loading: false });
+    }
+  },
+  deleteOrder: async (order_id) => {
+    set({ loading: true });
+
+    try {
+      const res = await axios.delete("/orders", {
+        data: { id: order_id },
+      });
+
+      console.log(res);
+    } catch (error) {
+      toast.error(error.response.data.error);
     } finally {
       set({ loading: false });
     }
