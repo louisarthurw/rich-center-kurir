@@ -260,7 +260,6 @@ export const handleMidtransWebhook = async (req, res) => {
       signature_key: signatureKeyFromMidtrans,
     } = req.body;
 
-
     // Buat signature_key kita sendiri
     const serverKey = process.env.MIDTRANS_SERVER_KEY;
     const rawSignature = order_id + status_code + gross_amount + serverKey;
@@ -272,7 +271,9 @@ export const handleMidtransWebhook = async (req, res) => {
     // Verifikasi signature
     if (signatureKeyFromMidtrans !== generatedSignatureKey) {
       console.warn("Invalid signature key from Midtrans");
-      return res.status(403).json({ success: false, error: "Invalid signature key" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Invalid signature key" });
     }
 
     // Tentukan payment status berdasarkan status dari Midtrans
@@ -312,6 +313,11 @@ export const handleMidtransWebhook = async (req, res) => {
     // Jika gagal, update semua address_status jadi 'cancelled'
     if (paymentStatus === "failed") {
       await sql`
+        UPDATE orders
+        SET order_status = 'cancelled'
+        WHERE id = ${order_id}
+      `;
+      await sql`
         UPDATE order_details
         SET address_status = 'cancelled'
         WHERE order_id = ${order_id}
@@ -324,7 +330,6 @@ export const handleMidtransWebhook = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
-
 
 export const assignKurirManual = async (req, res) => {
   const { delivery_details } = req.body;

@@ -144,20 +144,23 @@ const OrderPage = ({ id }) => {
         window.snap.pay(response.snap_token, {
           onSuccess: function (result) {
             console.log("Payment Success", result);
+            window.location.href = "/purchase-success";
           },
           onPending: function (result) {
             console.log("Payment Pending", result);
+            window.location.href = "/purchase-pending";
           },
           onError: function (result) {
             console.error("Payment Error", result);
-            Swal.fire("Error", "Terjadi kesalahan pembayaran.", "error");
+            window.location.href = "/purchase-cancel";
+            Swal.fire("Error", "Terjadi kesalahan pembayaran.", "error")
           },
           onClose: function () {
             console.log("Popup closed without finishing the payment");
             deleteOrder(response.order_id);
             Swal.fire(
               "Dibatalkan",
-              "Pembayaran dibatalkan oleh pengguna.",
+              "Pembayaran dibatalkan oleh customer.",
               "info"
             );
           },
