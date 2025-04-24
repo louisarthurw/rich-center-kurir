@@ -232,7 +232,7 @@ const AnalyticsTab = () => {
               dataKey="sales"
               stroke="#10B981"
               activeDot={{ r: 8 }}
-              name="Sales"
+              name="Orders"
             />
             <Line
               yAxisId="right"

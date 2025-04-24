@@ -302,6 +302,30 @@ const OrderDetailPage = () => {
                   </div>
                 </div>
 
+                {pickup_details.lat && pickup_details.long && user.role === "admin" &&(
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">
+                        Titik Koordinat
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <MapPin
+                            className="h-5 w-5 text-gray-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          readOnly
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          placeholder="Jalan A No. 1"
+                          value={`${pickup_details.lat}, ${pickup_details.long}`}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                 <div>
                   <label
                     htmlFor="pickup_notes"
@@ -536,7 +560,7 @@ const OrderDetailPage = () => {
                     </div>
                   </div>
 
-                  {detail.lat && detail.long && (
+                  {detail.lat && detail.long && user.role === "admin" &&(
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Titik Koordinat

@@ -121,6 +121,27 @@ export const createOrder = async (req, res) => {
   try {
     const { service_id, user_id, pickupDetails, deliveryDetails } = req.body;
 
+    // Validasi alamat yang dipilih
+    if (pickupDetails.pickup_lat == null || pickupDetails.pickup_lng == null) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Alamat pengambilan barang harus dipilih dari suggestion yang diberikan!",
+      });
+    }
+
+    for (let i = 0; i < deliveryDetails.length; i++) {
+      const detail = deliveryDetails[i];
+      if (detail.delivery_lat == null || detail.delivery_lng == null) {
+        return res.status(400).json({
+          success: false,
+          error: `Alamat pengiriman #${
+            i + 1
+          } harus dipilih dari suggestion yang diberikan!`,
+        });
+      }
+    }
+
     // Ambil harga layanan
     const service = await sql`SELECT * FROM services WHERE id = ${service_id}`;
 
@@ -151,9 +172,11 @@ export const createOrder = async (req, res) => {
         ${pickupDetails.pickup_notes}, ${pickupDetails.type}, ${
       pickupDetails.weight
     },
-        ${
-          pickupDetails.take_package_on_behalf_of
-        }, ${null}, ${null}, ${null}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
+        ${pickupDetails.take_package_on_behalf_of}, ${
+      pickupDetails.pickup_lat
+    }, ${
+      pickupDetails.pickup_lng
+    }, ${null}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
       ) RETURNING *;
     `;
 
@@ -169,9 +192,9 @@ export const createOrder = async (req, res) => {
           ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${
         detail.delivery_phone_number
       },
-          ${
-            detail.sender_name
-          }, ${null}, ${null}, ${null}, ${null}, ${null}, 'waiting'
+          ${detail.sender_name}, ${detail.delivery_lat}, ${
+        detail.delivery_lng
+      }, ${null}, ${null}, ${null}, 'waiting'
         );
       `;
     });

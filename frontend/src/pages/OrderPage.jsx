@@ -12,10 +12,12 @@ import {
   Loader,
   NotepadText,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useOrderStore } from "../stores/useOrderStore";
 import Swal from "sweetalert2";
+import { useJsApiLoader, StandaloneSearchBox } from "@react-google-maps/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const OrderPage = ({ id }) => {
   const service_id = useParams().id;
@@ -52,6 +54,16 @@ const OrderPage = ({ id }) => {
     setTakePackageOnBehalf(value);
   };
 
+  // loading gmaps
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "MY_API_KEY",
+    libraries: ["places"],
+  });
+
+  const pickupSearchBoxRef = useRef(null);
+  const deliverySearchBoxRefs = useRef([]);
+
   // menyimpan pickup details
   const [pickupDetails, setPickupDetails] = useState({
     date: "",
@@ -62,13 +74,44 @@ const OrderPage = ({ id }) => {
     type: "",
     weight: "",
     take_package_on_behalf_of: "",
+    pickup_lat: null,
+    pickup_lng: null,
   });
 
   const handlePickupDetailsChange = (e) => {
     const { id, value } = e.target;
+
+    // Jika yang diubah adalah pickup_address, reset koordinat
+    if (id === "pickup_address") {
+      setPickupDetails((prev) => ({
+        ...prev,
+        [id]: value,
+        pickup_lat: null,
+        pickup_lng: null,
+      }));
+    } else {
+      setPickupDetails((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    }
+  };
+
+  const handlePickupAddressChange = () => {
+    const places = pickupSearchBoxRef.current.getPlaces();
+
+    if (places.length === 0) return;
+
+    const place = places[0];
+    const address = place.formatted_address || place.name;
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
     setPickupDetails((prev) => ({
       ...prev,
-      [id]: value,
+      pickup_address: address,
+      pickup_lat: lat,
+      pickup_lng: lng,
     }));
   };
 
@@ -80,6 +123,8 @@ const OrderPage = ({ id }) => {
           delivery_address: "",
           delivery_phone_number: "",
           sender_name: "",
+          delivery_lat: null,
+          delivery_lng: null,
         })
       : [
           {
@@ -87,6 +132,8 @@ const OrderPage = ({ id }) => {
             delivery_address: "",
             delivery_phone_number: "",
             sender_name: "",
+            delivery_lat: null,
+            delivery_lng: null,
           },
         ];
 
@@ -101,6 +148,8 @@ const OrderPage = ({ id }) => {
         delivery_address: "",
         delivery_phone_number: "",
         sender_name: "",
+        delivery_lat: null,
+        delivery_lng: null,
       },
     ]);
   };
@@ -111,8 +160,47 @@ const OrderPage = ({ id }) => {
 
   const handleDeliveryDetailsChange = (index, key, value) => {
     setDeliveryDetails((prevDetails) =>
+      prevDetails.map((detail, i) => {
+        if (i === index) {
+          // Jika yang diubah adalah delivery_address, reset koordinat
+          if (key === "delivery_address") {
+            return {
+              ...detail,
+              [key]: value,
+              delivery_lat: null,
+              delivery_lng: null,
+            };
+          }
+          return {
+            ...detail,
+            [key]: value,
+          };
+        }
+        return detail;
+      })
+    );
+  };
+
+  const handleDeliveryAddressChange = (index) => {
+    const places = deliverySearchBoxRefs.current[index].getPlaces();
+
+    if (places.length === 0) return;
+
+    const place = places[0];
+    const address = place.formatted_address || place.name;
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    setDeliveryDetails((prevDetails) =>
       prevDetails.map((detail, i) =>
-        i === index ? { ...detail, [key]: value } : detail
+        i === index
+          ? {
+              ...detail,
+              delivery_address: address,
+              delivery_lat: lat,
+              delivery_lng: lng,
+            }
+          : detail
       )
     );
   };
@@ -153,7 +241,7 @@ const OrderPage = ({ id }) => {
           onError: function (result) {
             console.error("Payment Error", result);
             window.location.href = "/purchase-cancel";
-            Swal.fire("Error", "Terjadi kesalahan pembayaran.", "error")
+            Swal.fire("Error", "Terjadi kesalahan pembayaran.", "error");
           },
           onClose: function () {
             console.log("Popup closed without finishing the payment");
@@ -183,6 +271,10 @@ const OrderPage = ({ id }) => {
       document.body.removeChild(scriptTag);
     };
   }, []);
+
+  if (!isLoaded) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
@@ -310,31 +402,39 @@ const OrderPage = ({ id }) => {
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="pickup_address"
-                    className="block text-sm font-medium text-gray-300"
-                  >
-                    Alamat
-                  </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin
-                        className="h-5 w-5 text-gray-400"
-                        aria-hidden="true"
+                <StandaloneSearchBox
+                  onLoad={(ref) => (pickupSearchBoxRef.current = ref)}
+                  onPlacesChanged={handlePickupAddressChange}
+                  // options={{
+                  //   componentRestrictions: { country: "id" },
+                  // }}
+                >
+                  <div>
+                    <label
+                      htmlFor="pickup_address"
+                      className="block text-sm font-medium text-gray-300"
+                    >
+                      Alamat
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPin
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <input
+                        id="pickup_address"
+                        type="text"
+                        required
+                        value={pickupDetails.pickup_address}
+                        onChange={handlePickupDetailsChange}
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        placeholder="Jalan A No. 1"
                       />
                     </div>
-                    <input
-                      id="pickup_address"
-                      type="text"
-                      required
-                      value={pickupDetails.pickup_address}
-                      onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                      placeholder="Jalan A No. 1"
-                    />
                   </div>
-                </div>
+                </StandaloneSearchBox>
 
                 <div>
                   <label
@@ -536,33 +636,43 @@ const OrderPage = ({ id }) => {
                     </div>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">
-                      Alamat
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
+                  <StandaloneSearchBox
+                    onLoad={(ref) =>
+                      (deliverySearchBoxRefs.current[index] = ref)
+                    }
+                    onPlacesChanged={() => handleDeliveryAddressChange(index)}
+                    // options={{
+                    //   componentRestrictions: { country: 'id' },
+                    // }}
+                  >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300">
+                        Alamat
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <MapPin
+                            className="h-5 w-5 text-gray-400"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          placeholder="Jalan A No. 1"
+                          value={detail.delivery_address}
+                          onChange={(e) =>
+                            handleDeliveryDetailsChange(
+                              index,
+                              "delivery_address",
+                              e.target.value
+                            )
+                          }
                         />
                       </div>
-                      <input
-                        type="text"
-                        required
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                        placeholder="Jalan A No. 1"
-                        value={detail.delivery_address}
-                        onChange={(e) =>
-                          handleDeliveryDetailsChange(
-                            index,
-                            "delivery_address",
-                            e.target.value
-                          )
-                        }
-                      />
                     </div>
-                  </div>
+                  </StandaloneSearchBox>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300">
