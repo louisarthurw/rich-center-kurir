@@ -408,6 +408,21 @@ export const assignKurirManual = async (req, res) => {
   }
 };
 
+function haversineDistance(p1, p2) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(p2[0] - p1[0]);
+  const dLon = toRad(p2[1] - p1[1]);
+  const lat1 = toRad(p1[0]);
+  const lat2 = toRad(p2[0]);
+
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 // skmeans
 export const assignKurir = async (req, res) => {
   const { date } = req.body;
@@ -455,7 +470,8 @@ export const assignKurir = async (req, res) => {
     ]);
 
     // Apply skmeans untuk clustering
-    const result = skmeans(vectors, available_regular_couriers.length);
+    // const result = skmeans(vectors, available_regular_couriers.length);
+    const result = skmeans(vectors, available_regular_couriers.length, "kmpp", 10000, haversineDistance);
 
     // Objek untuk melacak kurir yang ditugaskan ke setiap order_id
     const courierAssignments = {};
