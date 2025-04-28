@@ -32,7 +32,6 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
-
 async function initDB() {
   try {
     await sql`
@@ -106,13 +105,15 @@ async function initDB() {
         long NUMERIC(11,7),
         courier_id VARCHAR(255),
         visit_order VARCHAR(255),
-        proof_image VARCHAR(255),
         payment_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
         order_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
-        address_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
+
+    // proof_image VARCHAR(255),
+    // address_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
+    
     await sql`
     CREATE TABLE IF NOT EXISTS order_details (
         id SERIAL PRIMARY KEY,

@@ -112,13 +112,21 @@ const CouriersList = ({ onAddCourier, onEditCourier }) => {
                   <div
                     className={`text-sm font-semibold uppercase ${
                       courier.role === "regular"
-                        ? "text-blue-400"
-                        : "text-yellow-500"
-                    } `}
+                        ? "text-blue-500"
+                        : courier.role === "special"
+                        ? "text-yellow-500"
+                        : courier.role === "car"
+                        ? "text-green-500"
+                        : "text-gray-400"
+                    }`}
                   >
                     {courier.role === "regular"
                       ? "Kurir Regular"
-                      : "Kurir Khusus"}
+                      : courier.role === "special"
+                      ? "Kurir Khusus"
+                      : courier.role === "car"
+                      ? "Kurir Mobil"
+                      : "Role Tidak Diketahui"}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">

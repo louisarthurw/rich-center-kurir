@@ -33,7 +33,7 @@ export const getAvailableCouriers = async (req, res) => {
         ORDER BY id ASC
       `;
 
-    console.log("fetched couriers", couriers);
+    // console.log("fetched couriers", couriers);
     res.status(200).json({ success: true, data: couriers });
     // if (couriers.length > 0) {
     //   res.status(200).json({ success: true, data: couriers });

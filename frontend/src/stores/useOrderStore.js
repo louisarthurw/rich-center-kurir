@@ -132,4 +132,19 @@ export const useOrderStore = create((set, get) => ({
       set({ loading: false });
     }
   },
+  assignKurir: async (date) => {
+    set({ loading: true });
+
+    try {
+      const response = await axios.put(`/orders/assign-courier`, {
+        date,
+      });
+      console.log(date);
+      toast.success(`Berhasil assign kurir untuk tanggal ${date}`);
+    } catch (error) {
+      toast.error(error.response.data.error);
+    } finally {
+      set({ loading: false });
+    }
+  },
 }));

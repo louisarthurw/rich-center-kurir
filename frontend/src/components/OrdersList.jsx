@@ -3,14 +3,21 @@ import { motion } from "framer-motion";
 import { Eye, Package } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const OrdersList = () => {
-  const { loading, orders, getAllOrders } = useOrderStore();
+  const { loading, orders, getAllOrders, assignKurir } = useOrderStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     getAllOrders();
   }, [getAllOrders]);
+
+  const now = new Date();
+  const jakartaNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
+  );
+  const todayJakarta = jakartaNow.toISOString().slice(0, 10);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("id-ID", {
@@ -18,6 +25,25 @@ const OrdersList = () => {
       month: "long",
       year: "numeric",
     });
+  };
+
+  const handleAssignKurir = async (e) => {
+    e.preventDefault();
+
+    const result = await Swal.fire({
+      title: "Konfirmasi Assign Kurir",
+      text: "Apakah Anda yakin ingin assign kurir?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, benar!",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#374151",
+    });
+
+    if (result.isConfirmed) {
+      await assignKurir(todayJakarta);
+    }
   };
 
   if (loading) {
@@ -56,10 +82,24 @@ const OrdersList = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="px-1 py-3 text-emerald-400 text-lg font-semibold">
-            {date} ({ordersForDate.length}{" "}
-            {ordersForDate.length === 1 ? "order" : "orders"})
+          <div className="flex justify-between items-center px-1 py-3">
+            <div className="text-emerald-400 text-lg font-semibold">
+              {date} ({ordersForDate.length}{" "}
+              {ordersForDate.length === 1 ? "order" : "orders"})
+            </div>
+
+            {formatDate(todayJakarta) === date ? (
+              <button
+                className="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg"
+                onClick={handleAssignKurir}
+              >
+                Assign Kurir
+              </button>
+            ) : (
+              ""
+            )}
           </div>
+
           <div className="rounded-lg overflow-hidden">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700">

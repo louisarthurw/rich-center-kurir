@@ -2,6 +2,9 @@ import { sql } from "../config/db.js";
 import dotenv from "dotenv";
 import Midtrans from "midtrans-client";
 import crypto from "crypto";
+// import kmeans from "node-kmeans";
+// import kmeans from "ml-kmeans";
+import skmeans from "skmeans";
 
 dotenv.config();
 
@@ -155,6 +158,32 @@ export const createOrder = async (req, res) => {
     const total_address = deliveryDetails.length;
     const subtotal = price_per_address * total_address;
 
+    // cek apakah order nya diassign ke kurir mobil atau kurir khusus
+    let assignedCourierId = null;
+
+    if (Number(service_id) === 2) {
+      assignedCourierId = 6;
+    }
+
+    // if (Number(service_id) === 3 || Number(service_id) === 4) {
+    if (Number(service_id) === 4) {
+      const specialCourier = await sql`
+        SELECT id FROM couriers 
+        WHERE role = 'special' AND status = 'active' 
+        ORDER BY id ASC
+        LIMIT 1
+      `;
+
+      if (specialCourier.length > 0) {
+        assignedCourierId = specialCourier[0].id;
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "Tidak ada kurir special yang aktif tersedia.",
+        });
+      }
+    }
+
     // Insert ke tabel orders
     const newOrder = await sql`
       INSERT INTO orders (
@@ -176,7 +205,7 @@ export const createOrder = async (req, res) => {
       pickupDetails.pickup_lat
     }, ${
       pickupDetails.pickup_lng
-    }, ${null}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
+    }, ${assignedCourierId}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
       ) RETURNING *;
     `;
 
@@ -194,7 +223,7 @@ export const createOrder = async (req, res) => {
       },
           ${detail.sender_name}, ${detail.delivery_lat}, ${
         detail.delivery_lng
-      }, ${null}, ${null}, ${null}, 'waiting'
+      }, ${assignedCourierId}, ${null}, ${null}, 'waiting'
         );
       `;
     });
@@ -378,3 +407,283 @@ export const assignKurirManual = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+
+// skmeans
+export const assignKurir = async (req, res) => {
+  const { date } = req.body;
+
+  try {
+    // Ambil kurir regular yang available
+    const available_regular_couriers = await sql`
+        SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at 
+        FROM couriers
+        WHERE availability_status = 'available' 
+          AND role = 'regular' 
+          AND status = 'active'
+        ORDER BY id ASC
+      `;
+
+    if (available_regular_couriers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "No available regular couriers found in database",
+      });
+    }
+
+    // Ambil semua alamat pengiriman
+    const order_details = await sql`
+        SELECT od.id, od.order_id, od.lat, od.long
+        FROM order_details od
+        INNER JOIN orders o ON od.order_id = o.id
+        WHERE DATE(o.date) = ${date}
+          AND o.service_id = 1
+          AND od.address_status = 'waiting'
+          AND o.payment_status = 'paid'
+      `;
+
+    if (order_details.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "No order details found for the given date and service_id",
+      });
+    }
+
+    // Mengubah data lat dan long menjadi vektor
+    const vectors = order_details.map((order) => [
+      parseFloat(order.lat),
+      parseFloat(order.long),
+    ]);
+
+    // Apply skmeans untuk clustering
+    const result = skmeans(vectors, available_regular_couriers.length);
+
+    // Objek untuk melacak kurir yang ditugaskan ke setiap order_id
+    const courierAssignments = {};
+
+    // Assign orders ke kurir
+    for (const [i, courier] of available_regular_couriers.entries()) {
+      const courierId = courier.id;
+      const clusterIndices = result.idxs
+        .map((idx, index) => (idx === i ? index : -1))
+        .filter((idx) => idx !== -1);
+
+      // Assign courier ke order_details
+      for (const index of clusterIndices) {
+        try {
+          await sql`
+            UPDATE order_details
+            SET courier_id = ${courierId}
+            WHERE id = ${order_details[index].id}
+          `;
+          console.log(
+            `Assigned Courier #${courierId} to OrderDetail ID: ${order_details[index].id}`
+          );
+
+          // Tambahkan courierId ke daftar yang akan diupdate di orders
+          const orderId = order_details[index].order_id;
+          if (!courierAssignments[orderId]) {
+            courierAssignments[orderId] = new Set();
+          }
+          courierAssignments[orderId].add(courierId);
+        } catch (updateError) {
+          console.log(
+            `Failed to update Courier for OrderDetail ID: ${order_details[index].id}`,
+            updateError
+          );
+        }
+      }
+    }
+
+    // Setelah menugaskan kurir ke semua order_details, update courier_id di orders
+    for (const orderId in courierAssignments) {
+      const courierIds = Array.from(courierAssignments[orderId]).join(",");
+      await sql`
+        UPDATE orders
+        SET courier_id = ${courierIds}
+        WHERE id = ${orderId}
+      `;
+      console.log(
+        `Updated courier_id for Order ID: ${orderId} with couriers: ${courierIds}`
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Courier assignment completed and database updated successfully.",
+      clusteringResult: result,
+    });
+  } catch (error) {
+    console.log("Error in assignKurir controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+// ml-kmeans
+// export const assignKurir = async (req, res) => {
+//   const { date } = req.body;
+
+//   try {
+//     const available_regular_couriers = await sql`
+//         SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
+//         FROM couriers
+//         WHERE availability_status = 'available'
+//           AND role = 'regular'
+//           AND status = 'active'
+//         ORDER BY id ASC
+//       `;
+
+//     if (available_regular_couriers.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "No available regular couriers found in database",
+//       });
+//     }
+
+//     const order_details = await sql`
+//         SELECT od.id, od.lat, od.long
+//         FROM order_details od
+//         INNER JOIN orders o ON od.order_id = o.id
+//         WHERE DATE(o.date) = ${date}
+//           AND o.service_id = 1
+//           AND od.address_status = 'waiting'
+//           AND o.payment_status = 'paid'
+//       `;
+
+//     if (order_details.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "No order details found for the given date and service_id",
+//       });
+//     }
+
+//     const vectors = order_details.map((order) => [
+//       parseFloat(order.lat),
+//       parseFloat(order.long),
+//     ]);
+
+//     // Perform clustering using KMeans
+//     const result = kmeans(vectors, available_regular_couriers.length);
+
+//     // Log the result
+//     console.log("Result of clustering:", result.clusters);
+
+//     // Assign orders to couriers based on clustering
+//     result.clusters.forEach((cluster, idx) => {
+//       console.log(
+//         `Courier #${available_regular_couriers[idx].id} assigned ${cluster.length} orders`
+//       );
+//       cluster.forEach((orderIndex) => {
+//         console.log(`- OrderDetail ID: ${order_details[orderIndex].id}`);
+//       });
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Courier assignment simulated successfully.",
+//       clusteringResult: result.clusters,
+//     });
+//   } catch (error) {
+//     console.log("Error in assignKurir controller", error);
+//     res.status(500).json({ success: false, error: "Internal server error" });
+//   }
+// };
+
+// node-kmeans
+// export const assignKurir = async (req, res) => {
+//   const { date } = req.body;
+
+//   try {
+//     const available_regular_couriers = await sql`
+//         SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
+//         FROM couriers
+//         WHERE availability_status = 'available'
+//           AND role = 'regular'
+//           AND status = 'active'
+//         ORDER BY id ASC
+//       `;
+
+//     if (available_regular_couriers.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "No available regular couriers found in database",
+//       });
+//     }
+
+//     const order_details = await sql`
+//         SELECT od.id, od.lat, od.long
+//         FROM order_details od
+//         INNER JOIN orders o ON od.order_id = o.id
+//         WHERE DATE(o.date) = ${date}
+//           AND o.service_id = 1
+//           AND od.address_status = 'waiting'
+//           AND o.payment_status = 'paid'
+//       `;
+
+//     if (order_details.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "No order details found for the given date and service_id",
+//       });
+//     }
+
+//     const vectors = order_details.map((order) => [
+//       parseFloat(order.lat),
+//       parseFloat(order.long),
+//     ]);
+
+//     const repeatClustering = async (vectors, k, attempts = 5) => {
+//       let bestResult = null;
+//       let lowestDistance = Infinity;
+
+//       for (let i = 0; i < attempts; i++) {
+//         await new Promise((resolve, reject) => {
+//           kmeans.clusterize(vectors, { k }, (err, result) => {
+//             if (err) return reject(err);
+
+//             const totalDistance = result.reduce((acc, cluster) => {
+//               const distance = cluster.centroidDistance || 0;
+//               return acc + distance;
+//             }, 0);
+
+//             if (totalDistance < lowestDistance) {
+//               bestResult = result;
+//               lowestDistance = totalDistance;
+//             }
+//             resolve();
+//           });
+//         });
+//       }
+//       return bestResult;
+//     };
+
+//     const result = await repeatClustering(vectors, available_regular_couriers.length);
+
+//     if (!result) {
+//       return res.status(500).json({
+//         success: false,
+//         error: "Clustering failed after multiple attempts",
+//       });
+//     }
+
+//     console.log("Result of clustering:", result);
+
+//     result.forEach((cluster, idx) => {
+//       console.log(
+//         `Courier #${available_regular_couriers[idx].id} assigned ${cluster.clusterInd.length} orders`
+//       );
+//       cluster.clusterInd.forEach((orderIndex) => {
+//         console.log(`- OrderDetail ID: ${order_details[orderIndex].id}`);
+//       });
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Courier assignment simulated successfully.",
+//       clusteringResult: result,
+//     });
+//   } catch (error) {
+//     console.log("Error in assignKurir controller", error);
+//     res.status(500).json({ success: false, error: "Internal server error" });
+//   }
+// };

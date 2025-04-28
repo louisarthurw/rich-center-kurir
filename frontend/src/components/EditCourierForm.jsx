@@ -160,6 +160,19 @@ const EditCourierForm = ({ onClose, id }) => {
               />
               <span className="text-white">Kurir Khusus</span>
             </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="role"
+                value="car"
+                checked={formData.role === "car"}
+                onChange={(e) =>
+                  setFormData({ ...formData, role: e.target.value })
+                }
+                className="form-radio text-emerald-500"
+              />
+              <span className="text-white">Kurir Mobil</span>
+            </label>
           </div>
         </div>
 
