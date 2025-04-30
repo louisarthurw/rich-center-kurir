@@ -15,6 +15,20 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
+const generateLoginToken = (courierId) => {
+  const loginToken = jwt.sign({ courierId }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "7d",
+  });
+
+  const decoded = jwt.decode(loginToken);
+  const expiresAt = decoded.exp * 1000;
+
+  return {
+    loginToken,
+    expiresAt,
+  };
+};
+
 const setCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true, // prevent XSS attacks, cross site scripting attack
@@ -210,41 +224,90 @@ export const logout = async (req, res) => {
   }
 };
 
-// // this will refresh the access token
-// export const refreshToken = async (req, res) => {
-//   try {
-//     const refreshToken = req.cookies.refreshToken;
+export const loginKurir = async (req, res) => {
+  const { email, password } = req.body;
 
-//     if (!refreshToken) {
-//       return res.status(401).json({ message: "No refresh token provided" });
-//     }
+  // console.log(email, password);
 
-//     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-//     const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email dan password harus diisi" });
+  }
 
-//     if (storedToken !== refreshToken) {
-//       return res.status(401).json({ message: "Invalid refresh token" });
-//     }
+  try {
+    const courier = await sql`
+      SELECT *
+      FROM couriers WHERE email = ${email}
+    `;
 
-//     const accessToken = jwt.sign(
-//       { userId: decoded.userId },
-//       process.env.ACCESS_TOKEN_SECRET,
-//       { expiresIn: "15m" }
-//     );
+    if (courier.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Akun tidak terdaftar" });
+    }
 
-//     res.cookie("accessToken", accessToken, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//       maxAge: 15 * 60 * 1000,
-//     });
+    if (courier[0].status === "inactive") {
+      return res.status(400).json({
+        success: false,
+        message: "Akun tidak aktif",
+      });
+    }
 
-//     res.json({ message: "Token refreshed successfully" });
-//   } catch (error) {
-//     console.log("Error in refreshToken controller", error.message);
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
+    const isPasswordValid = await bcrypt.compare(password, courier[0].password);
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Password salah" });
+    }
+
+    const { loginToken, expiresAt } = generateLoginToken(courier[0].id);
+    // console.log("token:", loginToken);
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        data: courier[0],
+        token: loginToken,
+        expiresAt: expiresAt,
+      });
+  } catch (error) {
+    console.log("Error in loginKurir controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+// this will refresh the access token
+export const refreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    const accessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.json({ message: "Token refreshed successfully" });
+  } catch (error) {
+    console.log("Error in refreshToken controller", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 export const getProfile = async (req, res) => {
   try {
