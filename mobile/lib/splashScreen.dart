@@ -21,13 +21,10 @@ class _SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   Future<void> _initializeApp() async {
-    // 1. Add slight delay for splash screen visibility
     await Future.delayed(const Duration(milliseconds: 2000));
 
-    // 2. Check authentication status
     final isAuthenticated = await _checkAuthentication();
 
-    // 3. Navigate to appropriate page
     if (mounted) {
       Navigator.pushReplacement(
         context,
@@ -40,17 +37,16 @@ class _SplashScreenPageState extends ConsumerState<SplashScreenPage> {
 
   Future<bool> _checkAuthentication() async {
     try {
-      // 1. Check if token exists and is valid
+      // cek apakah token masih belum expired
       final isValid = await AuthServices.isTokenValid();
-      
-      // 2. Clear session if token is invalid
+
+      // hapus session jika token expired
       if (!isValid) {
         await AuthServices.clearSession();
       }
-      
+
       return isValid;
     } catch (e) {
-      // Handle any errors during auth check
       debugPrint('Auth check error: $e');
       await AuthServices.clearSession();
       return false;
@@ -61,36 +57,25 @@ class _SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.blue[200],
+        color: Colors.blue[800],
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 1. App Logo
               Image.asset(
                 'assets/rich-center-kurir-logo.png',
                 width: context.width() * 0.5,
                 fit: BoxFit.contain,
               ),
-              
-              // 2. Spacer
               const SizedBox(height: 24),
-              
-              // 3. App Name
               Text(
                 "Rich Center Kurir",
                 style: TextStyle(
-                  color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
+                  color: Colors.white,
                 ),
-              ),
+              )
             ],
           ),
         ),

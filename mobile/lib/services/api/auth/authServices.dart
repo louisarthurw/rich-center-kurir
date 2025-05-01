@@ -20,7 +20,29 @@ class AuthServices {
         await sp.setInt("token_expires_at", data["expiresAt"]);
         await sp.setString("courier", jsonEncode(data["data"]));
       }
-      
+
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getCourierById(int id) async {
+    try {
+      final endpoint = Uri.parse('${url}/api/couriers/$id');
+      final response = await http.get(
+        endpoint,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        await sp.setString('courier', jsonEncode(data['data']));
+      }
+
       return data;
     } catch (e) {
       throw Exception('${e.toString()}');

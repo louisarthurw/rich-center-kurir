@@ -14,7 +14,6 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String message = "";
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +32,19 @@ class _LoginState extends State<Login> {
                 // Logo
                 Image.asset(
                   'assets/rich-center-kurir-logo.png',
-                  height: 120,
+                  height: 160,
                 ),
-                const SizedBox(height: 40),
+                60.height,
+
+                Text(
+                  'Selamat datang, Kurir!',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                20.height,
 
                 // Email TextField
                 AppTextField(
@@ -46,7 +55,7 @@ class _LoginState extends State<Login> {
                     prefixIcon: const Icon(Icons.email),
                   ),
                 ),
-                30.height,
+                20.height,
 
                 // Password TextField
                 AppTextField(
@@ -58,7 +67,7 @@ class _LoginState extends State<Login> {
                   ),
                   obscureText: false,
                 ),
-                30.height,
+                80.height,
 
                 // Login Button
                 AppButton(

@@ -12,7 +12,7 @@ class Home extends ConsumerStatefulWidget {
 }
 
 class _HomeState extends ConsumerState<Home> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   final screens = [
     AssignmentsPage(),
@@ -21,11 +21,11 @@ class _HomeState extends ConsumerState<Home> {
 
   final listBottomNavigation = [
     BottomNavigationBarItem(
-      icon: Icon(Icons.home),
+      icon: Icon(Icons.assignment_outlined),
       label: 'Assignments',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.corporate_fare_rounded),
+      icon: Icon(Icons.person),
       label: 'Profile',
     ),
   ];
