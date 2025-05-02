@@ -113,7 +113,8 @@ async function initDB() {
 
     // proof_image VARCHAR(255),
     // address_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
-    
+
+    // tambahin proof_coordinate sama distance (?)
     await sql`
     CREATE TABLE IF NOT EXISTS order_details (
         id SERIAL PRIMARY KEY,

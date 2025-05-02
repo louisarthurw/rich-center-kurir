@@ -49,6 +49,72 @@ class AuthServices {
     }
   }
 
+  Future<Map<String, dynamic>> updateCourierProfile(
+      int id, Map<String, dynamic> data) async {
+    try {
+      final endpoint = Uri.parse('${url}/api/couriers/$id');
+
+      final response = await http.put(
+        endpoint,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        await sp.setString('courier', jsonEncode(responseData['data']));
+      }
+
+      return responseData;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> updateAvailabilityStatus(
+      int id, String status) async {
+    try {
+      final endpoint = Uri.parse('${url}/api/couriers/availability-status/$id');
+
+      final response = await http.put(
+        endpoint,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'availability_status': status}),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        await sp.setString('courier', jsonEncode(responseData['data']));
+      }
+
+      return responseData;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(int id, String password) async {
+    try {
+      final endpoint = Uri.parse("${url}/api/couriers/password/$id");
+      final response = await http.put(
+        endpoint,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"password": password}),
+      );
+
+      final data = jsonDecode(response.body);
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
   static Future<bool> isTokenValid() async {
     final token = sp.getString("token");
     final expiry = sp.getInt("token_expires_at");

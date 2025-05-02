@@ -133,11 +133,9 @@ export const updateCourier = async (req, res) => {
       if (
         existingCourier.some((courier) => courier.phone_number === phone_number)
       ) {
-        return res
-          .status(400)
-          .json({
-            message: "Phone number is already registered by another courier",
-          });
+        return res.status(400).json({
+          message: "Phone number is already registered by another courier",
+        });
       }
     }
 
@@ -145,7 +143,7 @@ export const updateCourier = async (req, res) => {
       UPDATE couriers
       SET name = ${name}, email = ${email}, phone_number = ${phone_number}, address = ${address}, role = ${role}, status = ${status}, updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
-      RETURNING id, name, email, phone_number, address, role, status, created_at, updated_at
+      RETURNING id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
     `;
 
     if (updatedCourier.length === 0) {
@@ -157,6 +155,62 @@ export const updateCourier = async (req, res) => {
     res.status(200).json({ success: true, data: updatedCourier[0] });
   } catch (error) {
     console.log("Error in updateCourier controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const changeAvailabilityStatus = async (req, res) => {
+  const { id } = req.params;
+  const { availability_status } = req.body;
+
+  try {
+    const updatedCourierStatus = await sql`
+      UPDATE couriers
+      SET availability_status = ${availability_status}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+      RETURNING id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
+    `;
+
+    if (updatedCourierStatus.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Courier not found" });
+    }
+
+    res.status(200).json({ success: true, data: updatedCourierStatus[0] });
+  } catch (error) {
+    console.log("Error in changeAvailabilityStatus controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const changePasswordCourier = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const updatedPassword = await sql`
+      UPDATE couriers
+      SET password = ${hashedPassword}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+      RETURNING id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
+    `;
+
+    if (updatedPassword.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Akun tidak ditemukan" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Berhasil mengubah password, silahkan login kembali.",
+    });
+  } catch (error) {
+    console.log("Error in changePasswordCourier controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
