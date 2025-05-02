@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/login.dart';
-import 'package:mobile/services/api/auth/authServices.dart';
+import 'package:mobile/services/api/authServices.dart';
 
 class AssignmentsPage extends StatefulWidget {
   const AssignmentsPage({super.key});

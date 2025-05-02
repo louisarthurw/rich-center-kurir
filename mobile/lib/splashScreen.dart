@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/components/navbar.dart';
 import 'package:mobile/login.dart';
-import 'package:mobile/services/api/auth/authServices.dart';
+import 'package:mobile/services/api/authServices.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class SplashScreenPage extends ConsumerStatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/components/dialog.dart';
 import 'package:mobile/components/navbar.dart';
-import 'package:mobile/services/api/auth/authServices.dart';
+import 'package:mobile/services/api/authServices.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class Login extends StatefulWidget {

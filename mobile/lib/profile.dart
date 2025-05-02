@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/changePassword.dart';
 import 'package:mobile/login.dart';
 import 'package:mobile/main.dart';
-import 'package:mobile/services/api/auth/authServices.dart';
+import 'package:mobile/services/api/authServices.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -355,7 +355,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 48),
                         ),
-                        child: const Text('Change Password'),
+                        child: const Text('Ganti Password'),
                       ),
                     ],
                   )
@@ -385,7 +385,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 48),
                         ),
-                        child: const Text('Change Password'),
+                        child: const Text('Ganti Password'),
                       ),
                     ],
                   ),
@@ -438,6 +438,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       }
                     },
               activeColor: Colors.blue,
+              visualDensity:
+                  const VisualDensity(horizontal: -4.0, vertical: -4.0),
             ),
             const Text('Available'),
             20.width,
