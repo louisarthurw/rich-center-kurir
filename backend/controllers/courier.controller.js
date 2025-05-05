@@ -5,7 +5,9 @@ export const getAllCouriers = async (req, res) => {
   try {
     const couriers = await sql`
         SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at FROM couriers
-        ORDER BY id ASC
+        ORDER BY 
+          (status != 'active'), 
+          id ASC
       `;
 
     console.log("fetched couriers", couriers);
@@ -211,6 +213,245 @@ export const changePasswordCourier = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in changePasswordCourier controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+// export const getAllAssignmentCourier = async (req, res) => {
+//   const { courier_id } = req.params;
+//   console.log(courier_id);
+
+//   try {
+//     const pickupDetails = await sql`
+//       SELECT
+//         id AS order_id,
+//         user_id,
+//         service_id,
+//         total_address,
+//         subtotal,
+//         date,
+//         pickup_name,
+//         pickup_phone_number,
+//         pickup_address,
+//         pickup_notes,
+//         type,
+//         weight,
+//         take_package_on_behalf_of,
+//         lat,
+//         long,
+//         courier_id,
+//         visit_order,
+//         payment_status,
+//         order_status,
+//         created_at,
+//         updated_at
+//       FROM orders
+//       WHERE (',' || courier_id || ',') LIKE ${"%," + courier_id + ",%"}
+//       ORDER BY date DESC
+//     `;
+
+//     if (pickupDetails.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ success: false, error: "Belum ada assigment yang diberikan." });
+//     }
+
+//     // Kelompokkan berdasarkan tanggal
+//     const groupedPickup = [];
+//     const groupedDelivery = [];
+
+//     for (const order of pickupDetails) {
+//       groupedPickup.push(order);
+
+//       const delivery = await sql`
+//         SELECT
+//           id AS order_detail_id,
+//           order_id,
+//           delivery_name,
+//           delivery_address,
+//           delivery_phone_number,
+//           sender_name,
+//           lat,
+//           long,
+//           courier_id,
+//           visit_order,
+//           proof_image,
+//           address_status,
+//           created_at,
+//           updated_at
+//         FROM order_details
+//         WHERE order_id = ${order.order_id} AND courier_id = ${courier_id}
+//       `;
+//       // ORDER BY visit_order ASC NULLS LAST
+
+//       groupedDelivery.push(delivery);
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: {
+//         pickup_details: groupedPickup,
+//         delivery_details: groupedDelivery,
+//       },
+//     });
+//   } catch (error) {
+//     console.log("Error in getAllAssignmentCourier controller", error);
+//     res.status(500).json({ success: false, error: "Internal server error" });
+//   }
+// };
+
+export const getAllAssignmentCourier = async (req, res) => {
+  const { courier_id } = req.params;
+
+  try {
+    const pickupDetails = await sql`
+      SELECT 
+        id AS order_id,
+        user_id,
+        service_id,
+        total_address,
+        subtotal,
+        date,
+        pickup_name,
+        pickup_phone_number,
+        pickup_address,
+        pickup_notes,
+        type,
+        weight,
+        take_package_on_behalf_of,
+        lat,
+        long,
+        courier_id,
+        visit_order,
+        payment_status,
+        order_status,
+        created_at,
+        updated_at
+      FROM orders
+      WHERE (',' || courier_id || ',') LIKE ${"%," + courier_id + ",%"}
+      ORDER BY date DESC
+    `;
+
+    const grouped = {};
+
+    for (const order of pickupDetails) {
+      const dateKey = order.date?.toISOString?.();
+      if (!dateKey) continue;
+
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = {
+          pickup_details: [],
+          delivery_details: [],
+        };
+      }
+
+      grouped[dateKey].pickup_details.push(order);
+
+      const delivery = await sql`
+        SELECT 
+          id AS order_detail_id,
+          order_id,
+          delivery_name,
+          delivery_address,
+          delivery_phone_number,
+          sender_name,
+          lat,
+          long,
+          courier_id,
+          visit_order,
+          proof_image,
+          address_status,
+          created_at,
+          updated_at
+        FROM order_details
+        WHERE order_id = ${order.order_id} AND courier_id = ${courier_id}
+        ORDER BY visit_order ASC NULLS LAST
+      `;
+
+      grouped[dateKey].delivery_details.push(...delivery);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: grouped,
+    });
+  } catch (error) {
+    console.log("Error in getAllAssignmentCourier controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const getAssignmentCourierByDate = async (req, res) => {
+  const { courier_id, date } = req.params;
+
+  try {
+    const pickupDetails = await sql`
+      SELECT
+        id AS order_id,
+        user_id,
+        service_id,
+        total_address,
+        subtotal,
+        date,
+        pickup_name,
+        pickup_phone_number,
+        pickup_address,
+        pickup_notes,
+        type,
+        weight,
+        take_package_on_behalf_of,
+        lat,
+        long,
+        courier_id,
+        visit_order,
+        payment_status,
+        order_status,
+        created_at,
+        updated_at
+      FROM orders
+      WHERE (',' || courier_id || ',') LIKE ${"%," + courier_id + ",%"}
+        AND DATE(date) = ${date}
+      ORDER BY date DESC
+    `;
+
+    const groupedPickup = [];
+    const groupedDelivery = [];
+
+    for (const order of pickupDetails) {
+      groupedPickup.push(order);
+
+      const delivery = await sql`
+        SELECT
+          id AS order_detail_id,
+          order_id,
+          delivery_name,
+          delivery_address,
+          delivery_phone_number,
+          sender_name,
+          lat,
+          long,
+          courier_id,
+          visit_order,
+          proof_image,
+          address_status,
+          created_at,
+          updated_at
+        FROM order_details
+        WHERE order_id = ${order.order_id} AND courier_id = ${courier_id}
+      `;
+
+      groupedDelivery.push(delivery);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        pickup_details: groupedPickup,
+        delivery_details: groupedDelivery,
+      },
+    });
+  } catch (error) {
+    console.log("Error in getAssignmentCourierByDate controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };

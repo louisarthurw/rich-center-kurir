@@ -19,9 +19,9 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isEditing = false;
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-  late TextEditingController _addressController;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   @override
   void initState() {
@@ -42,9 +42,11 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final courierString = sp.getString('courier');
       if (courierString == null) {
-        setState(() {
-          isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
         return;
       }
 
@@ -58,23 +60,24 @@ class _ProfilePageState extends State<ProfilePage> {
         }
 
         await sp.setString('courier', jsonEncode(response['data']));
-        _emailController =
-            TextEditingController(text: response['data']['email']);
-        _phoneController =
-            TextEditingController(text: response['data']['phone_number']);
-        _addressController =
-            TextEditingController(text: response['data']['address']);
+        _emailController.text = response['data']['email'];
+        _phoneController.text = response['data']['phone_number'];
+        _addressController.text = response['data']['address'];
 
-        setState(() {
-          courierData = response['data'];
-        });
+        if (mounted) {
+          setState(() {
+            courierData = response['data'];
+          });
+        }
       }
     } catch (e) {
-      toast('Error loading courier data: $e');
+      toast('Error loading courier data');
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

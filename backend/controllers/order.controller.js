@@ -179,7 +179,7 @@ export const createOrder = async (req, res) => {
       } else {
         return res.status(400).json({
           success: false,
-          error: "Tidak ada kurir special yang aktif tersedia.",
+          error: "Tidak ada kurir khusus yang aktif tersedia.",
         });
       }
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/splashScreen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 late SharedPreferences sp;
 
@@ -11,6 +12,7 @@ late SharedPreferences sp;
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await initializeSharedPreferences();
   runApp(const ProviderScope(child: MyApp()));
 }
