@@ -141,28 +141,29 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Assignments'),
-        ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : groupedAssignments.isEmpty
-                ? const Center(child: Text('Anda tidak memiliki assignment.'))
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: groupedAssignments.length,
-                    itemBuilder: (context, index) {
-                      final assignment = groupedAssignments[index];
-                      return _buildAssignmentSection(
-                        label: assignment['date'],
-                        date: assignment['originalDate'],
-                        pickup: assignment['pickupCount'],
-                        delivery: assignment['deliveryCount'],
-                        serviceName: assignment['serviceName'],
-                        serviceImage: assignment['serviceImage'],
-                      );
-                    },
-                  ));
+      appBar: AppBar(
+        title: const Text('Assignments'),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : groupedAssignments.isEmpty
+              ? const Center(child: Text('Anda tidak memiliki assignment.'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: groupedAssignments.length,
+                  itemBuilder: (context, index) {
+                    final assignment = groupedAssignments[index];
+                    return _buildAssignmentSection(
+                      label: assignment['date'],
+                      date: assignment['originalDate'],
+                      pickup: assignment['pickupCount'],
+                      delivery: assignment['deliveryCount'],
+                      serviceName: assignment['serviceName'],
+                      serviceImage: assignment['serviceImage'],
+                    );
+                  },
+                ),
+    );
   }
 
   Widget _buildAssignmentSection({

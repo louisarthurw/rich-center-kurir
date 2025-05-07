@@ -264,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : courierData == null
-              ? const Center(child: Text('No courier data available'))
+              ? const Center(child: Text('Tidak dapat mengambil data kurir'))
               : _buildProfileContent(),
     );
   }
