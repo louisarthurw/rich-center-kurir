@@ -20,7 +20,7 @@ export const getAllOrders = async (req, res) => {
       ORDER BY orders.id DESC
     `;
 
-    console.log("fetched orders", orders);
+    // console.log("fetched orders", orders);
     if (orders.length > 0) {
       res.status(200).json({ success: true, data: orders });
     } else {
@@ -52,6 +52,7 @@ export const getOrderById = async (req, res) => {
     const deliveryDetails = await sql`
       SELECT 
         od.id,
+        od.order_id,
         od.delivery_name,
         od.delivery_address,
         od.delivery_phone_number,
@@ -384,8 +385,20 @@ export const handleMidtransWebhook = async (req, res) => {
 
 export const assignKurirManual = async (req, res) => {
   const { delivery_details } = req.body;
+  // console.log("delivery details: ", delivery_details);
 
   try {
+    const invalidEntries = delivery_details.filter(
+      (detail) => detail.courier_id === null || detail.courier_id === undefined
+    );
+
+    if (invalidEntries.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Ada alamat yang belum di assignkan kurirnya.",
+      });
+    }
+
     for (const detail of delivery_details) {
       const { id, courier_id } = detail;
 
@@ -395,6 +408,27 @@ export const assignKurirManual = async (req, res) => {
           WHERE id = ${id}
         `;
     }
+
+    const orderId = delivery_details[0]?.order_id;
+    // console.log("order id:", orderId);
+
+    const courierIdsResult = await sql`
+      SELECT DISTINCT courier_id
+      FROM order_details
+      WHERE order_id = ${orderId}
+    `;
+    // console.log("result:", courierIdsResult);
+
+    const courierIds = courierIdsResult.map((row) => row.courier_id);
+    // console.log("courier id:", courierIds);
+    const courierIdsString = courierIds.sort((a, b) => a - b).join(",");
+    // console.log("sorted courier id:", courierIdsString);
+
+    await sql`
+      UPDATE orders
+      SET courier_id = ${courierIdsString}
+      WHERE id = ${orderId}
+    `;
 
     res.status(200).json({
       success: true,
