@@ -125,6 +125,7 @@ async function initDB() {
         sender_name VARCHAR(255),
         lat NUMERIC(11,7),
         long NUMERIC(11,7),
+        cluster_centroid VARCHAR(255),
         courier_id INTEGER REFERENCES couriers(id),
         visit_order INTEGER,
         proof_image VARCHAR(255),

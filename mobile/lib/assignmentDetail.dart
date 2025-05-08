@@ -115,10 +115,13 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
               setState(() {
                 _selectedMarkerData = {
                   'type': 'delivery',
+                  'id': item['order_detail_id'],
                   'name': item['delivery_name'],
                   'phone': item['delivery_phone_number'],
                   'address': item['delivery_address'],
                   'sender_name': item['sender_name'] ?? '',
+                  'address_status': item['address_status'],
+                  'proof_image': item['proof_image'] ?? '',
                 };
               });
             },
@@ -183,6 +186,13 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                 data['sender_name']?.isNotEmpty == true
                     ? data['sender_name']!
                     : "-"),
+            // _infoLine("Status Pengiriman", data['address_status'] ?? "-"),
+            // _infoLine(
+            //     "Bukti Foto",
+            //     data['proof_image']?.isNotEmpty == true
+            //         ? data['proof_image']
+            //         : "-"),
+            // _infoLine("ID", data['id'].toString()),
           ],
         ],
       ),
@@ -206,6 +216,31 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
     );
   }
 
+  LatLng _getInitialCameraPosition() {
+    final deliveryGroups = assignmentData?['delivery_details'];
+
+    if (deliveryGroups != null && deliveryGroups.isNotEmpty) {
+      final cluster = deliveryGroups[0];
+      if (cluster.isNotEmpty) {
+        final centroidStr = cluster[0]['cluster_centroid'];
+        if (centroidStr != null && centroidStr.isNotEmpty) {
+          final parts = centroidStr.split(',');
+
+          if (parts.length == 2) {
+            final lat = double.tryParse(parts[0].trim());
+            final lng = double.tryParse(parts[1].trim());
+
+            if (lat != null && lng != null) {
+              return LatLng(lat, lng);
+            }
+          }
+        }
+      }
+    }
+
+    return const LatLng(-7.2575, 112.7521);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,8 +251,8 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
               children: [
                 GoogleMap(
                   onMapCreated: (controller) => mapController = controller,
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(-7.2575, 112.7521),
+                  initialCameraPosition: CameraPosition(
+                    target: _getInitialCameraPosition(),
                     zoom: 13,
                   ),
                   markers: _buildMarkers(),

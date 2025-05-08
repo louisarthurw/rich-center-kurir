@@ -430,6 +430,7 @@ export const getAssignmentCourierByDate = async (req, res) => {
           sender_name,
           lat,
           long,
+          cluster_centroid,
           courier_id,
           visit_order,
           proof_image,

@@ -1,6 +1,5 @@
 import { sql } from "../config/db.js";
 import dotenv from "dotenv";
-import Midtrans from "midtrans-client";
 import crypto from "crypto";
 // import kmeans from "node-kmeans";
 // import kmeans from "ml-kmeans";
@@ -216,14 +215,14 @@ export const createOrder = async (req, res) => {
       return sql`
         INSERT INTO order_details (
           order_id, delivery_name, delivery_address, delivery_phone_number,
-          sender_name, lat, long, courier_id, visit_order, proof_image, address_status
+          sender_name, lat, long, cluster_centroid, courier_id, visit_order, proof_image, address_status
         ) VALUES (
           ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${
         detail.delivery_phone_number
       },
           ${detail.sender_name}, ${detail.delivery_lat}, ${
         detail.delivery_lng
-      }, ${assignedCourierId}, ${null}, ${null}, 'waiting'
+      }, ${null}, ${assignedCourierId}, ${null}, ${null}, 'waiting'
         );
       `;
     });
@@ -416,9 +415,9 @@ function haversineDistance(p1, p2) {
   const lat1 = toRad(p1[0]);
   const lat2 = toRad(p2[0]);
 
-  const a = Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -455,6 +454,7 @@ export const assignKurir = async (req, res) => {
           AND od.address_status = 'waiting'
           AND o.payment_status = 'paid'
       `;
+    // console.log(order_details);
 
     if (order_details.length === 0) {
       return res.status(404).json({
@@ -471,7 +471,14 @@ export const assignKurir = async (req, res) => {
 
     // Apply skmeans untuk clustering
     // const result = skmeans(vectors, available_regular_couriers.length);
-    const result = skmeans(vectors, available_regular_couriers.length, "kmpp", 10000, haversineDistance);
+    const result = skmeans(
+      vectors,
+      available_regular_couriers.length,
+      "kmpp",
+      10000,
+      haversineDistance
+    );
+    // console.log(result);
 
     // Objek untuk melacak kurir yang ditugaskan ke setiap order_id
     const courierAssignments = {};
@@ -486,9 +493,12 @@ export const assignKurir = async (req, res) => {
       // Assign courier ke order_details
       for (const index of clusterIndices) {
         try {
+          const centroid = result.centroids[i];
+          const centroidStr = `${centroid[0]},${centroid[1]}`;
+
           await sql`
             UPDATE order_details
-            SET courier_id = ${courierId}
+            SET courier_id = ${courierId}, cluster_centroid = ${centroidStr}
             WHERE id = ${order_details[index].id}
           `;
           console.log(
