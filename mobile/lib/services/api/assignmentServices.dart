@@ -38,6 +38,25 @@ class AssignmentServices {
     }
   }
 
+  Future<Map<String, dynamic>> getAssignmentByOrderId(
+      int courier_id, int order_id) async {
+    try {
+      final endpoint =
+          Uri.parse("${url}/api/couriers/assignment/$courier_id/id/$order_id");
+
+      final response = await http.get(
+        endpoint,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      final data = jsonDecode(response.body);
+
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
   Future<Map<String, dynamic>> getServiceById(int id) async {
     try {
       final endpoint = Uri.parse("${url}/api/services/$id");

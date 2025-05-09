@@ -8,10 +8,12 @@ import 'package:mobile/services/api/authServices.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class AssignmentDetailPage extends StatefulWidget {
+  final dynamic id;
   final String date;
 
   const AssignmentDetailPage({
     super.key,
+    required this.id,
     required this.date,
   });
 
@@ -52,8 +54,10 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
       }
 
       final courier = jsonDecode(courierString);
-      final response =
-          await AssignmentServices().getAssignment(courier['id'], widget.date);
+
+      final response = widget.id == null
+          ? await AssignmentServices().getAssignment(courier['id'], widget.date)
+          : await AssignmentServices().getAssignmentByOrderId(courier['id'], widget.id);
 
       if (response['success'] == true && mounted) {
         setState(() {

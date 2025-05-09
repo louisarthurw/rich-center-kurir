@@ -66,6 +66,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
         }
       }
     } catch (e) {
+      print('error: $e');
       toast('Error loading assignment data: $e');
       if (mounted) {
         setState(() {
@@ -87,15 +88,22 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
       final jakartaDate = utcDate.add(const Duration(hours: 7));
       final formattedDate = _formatDate(jakartaDate);
 
-      final pickupCount = assignments['pickup_details']?.length ?? 0;
-      final deliveryCount = assignments['delivery_details']?.length ?? 0;
+      final List<dynamic> pickupDetails = assignments['pickup_details'] ?? [];
+      final List<dynamic> deliveryDetails =
+          assignments['delivery_details'] ?? [];
 
-      String serviceName = 'Unknown Service';
-      String serviceImage = '';
+      // Untuk service id 1 dan 2, group by date
+      final regularServices = pickupDetails.where((pickup) {
+        final serviceId = pickup['service_id'] as int?;
+        return serviceId == 1 || serviceId == 2;
+      }).toList();
 
-      if (pickupCount > 0) {
+      if (regularServices.isNotEmpty) {
+        String serviceName = 'Unknown Service';
+        String serviceImage = '';
+
         try {
-          final firstPickup = assignments['pickup_details'][0];
+          final firstPickup = regularServices[0] as Map<String, dynamic>;
           if (firstPickup['service_id'] != null) {
             final serviceResponse = await AssignmentServices()
                 .getServiceById(firstPickup['service_id']);
@@ -107,17 +115,86 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
         } catch (e) {
           print('Error fetching service details: $e');
         }
+
+        // Hitung jumlah pickup dan delivery untuk service 1 dan 2
+        final regularPickupCount = regularServices.length;
+        final regularDeliveryCount = deliveryDetails.where((delivery) {
+          final deliveryMap = delivery as Map<String, dynamic>;
+          return regularServices.any((pickup) {
+            final pickupMap = pickup as Map<String, dynamic>;
+            return pickupMap['order_id'] == deliveryMap['order_id'];
+          });
+        }).length;
+
+        if (regularPickupCount > 0) {
+          result.add({
+            'id': null,
+            'date': formattedDate,
+            'pickupCount': regularPickupCount,
+            'deliveryCount': regularDeliveryCount,
+            'originalDate': jakartaDate,
+            'assignments': {
+              'pickup_details': regularServices,
+              'delivery_details': deliveryDetails.where((delivery) {
+                final deliveryMap = delivery as Map<String, dynamic>;
+                return regularServices.any((pickup) {
+                  final pickupMap = pickup as Map<String, dynamic>;
+                  return pickupMap['order_id'] == deliveryMap['order_id'];
+                });
+              }).toList()
+            },
+            'serviceName': serviceName,
+            'serviceImage': serviceImage,
+            'isGrouped': true,
+          });
+        }
       }
 
-      result.add({
-        'date': formattedDate,
-        'pickupCount': pickupCount,
-        'deliveryCount': deliveryCount,
-        'originalDate': jakartaDate,
-        'assignments': assignments,
-        'serviceName': serviceName,
-        'serviceImage': serviceImage,
-      });
+      // Untuk service id 3 dan 4, buat per order (tidak digroup)
+      final specialServices = pickupDetails.where((pickup) {
+        final serviceId = pickup['service_id'] as int?;
+        return serviceId == 3 || serviceId == 4;
+      }).toList();
+
+      for (var pickup in specialServices) {
+        final pickupMap = pickup as Map<String, dynamic>;
+        String serviceName = 'Unknown Service';
+        String serviceImage = '';
+
+        try {
+          if (pickupMap['service_id'] != null) {
+            final serviceResponse = await AssignmentServices()
+                .getServiceById(pickupMap['service_id']);
+            if (serviceResponse['success'] == true) {
+              serviceName = serviceResponse['data']['name'] ?? serviceName;
+              serviceImage = serviceResponse['data']['image'] ?? serviceImage;
+            }
+          }
+        } catch (e) {
+          print('Error fetching service details: $e');
+        }
+
+        // Hitung delivery untuk order ini saja
+        final orderDeliveries = deliveryDetails.where((delivery) {
+          final deliveryMap = delivery as Map<String, dynamic>;
+          return deliveryMap['order_id'] == pickupMap['order_id'];
+        }).toList();
+
+        result.add({
+          'id': pickupMap['order_id'],
+          'date': formattedDate,
+          'pickupCount': 1,
+          'deliveryCount': orderDeliveries.length,
+          'originalDate': jakartaDate,
+          'assignments': {
+            'pickup_details': [pickup],
+            'delivery_details': orderDeliveries
+          },
+          'serviceName': serviceName,
+          'serviceImage': serviceImage,
+          'isGrouped': false,
+        });
+      }
     }
 
     result.sort((a, b) => b['originalDate'].compareTo(a['originalDate']));
@@ -148,100 +225,123 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           ? const Center(child: CircularProgressIndicator())
           : groupedAssignments.isEmpty
               ? const Center(child: Text('Anda tidak memiliki assignment.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: groupedAssignments.length,
-                  itemBuilder: (context, index) {
-                    final assignment = groupedAssignments[index];
-                    return _buildAssignmentSection(
-                      label: assignment['date'],
+              : _buildGroupedAssignments(),
+    );
+  }
+
+  Widget _buildGroupedAssignments() {
+    final Map<String, List<Map<String, dynamic>>> groupedByDate = {};
+
+    for (final assignment in groupedAssignments) {
+      final dateKey = assignment['date'];
+      if (!groupedByDate.containsKey(dateKey)) {
+        groupedByDate[dateKey] = [];
+      }
+      groupedByDate[dateKey]!.add(assignment);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: groupedByDate.length,
+      itemBuilder: (context, index) {
+        final dateKey = groupedByDate.keys.elementAt(index);
+        final assignmentsForDate = groupedByDate[dateKey]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              dateKey,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            2.height,
+            ...assignmentsForDate
+                .map((assignment) => _buildAssignmentItem(
+                      id: assignment['id'],
                       date: assignment['originalDate'],
                       pickup: assignment['pickupCount'],
                       delivery: assignment['deliveryCount'],
                       serviceName: assignment['serviceName'],
                       serviceImage: assignment['serviceImage'],
-                    );
-                  },
-                ),
+                    ))
+                .toList(),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildAssignmentSection({
-    required String label,
+  Widget _buildAssignmentItem({
+    required dynamic id,
     required DateTime date,
     required int pickup,
     required int delivery,
     required String serviceName,
     required String serviceImage,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        2.height,
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AssignmentDetailPage(
-                  date: _formatDateOnly(date),
-                ),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(4),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AssignmentDetailPage(
+              id: id,
+              date: _formatDateOnly(date),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  child: serviceImage.isNotEmpty
-                      ? Image.network(serviceImage, fit: BoxFit.cover)
-                      : const Icon(Icons.image, size: 40),
-                ),
-                8.width,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        serviceName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '$pickup Alamat Pengambilan',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        '$delivery Alamat Pengiriman',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                )
-              ],
+                  border: Border.all(
+                    color: Colors.black,
+                  )),
+              child: serviceImage.isNotEmpty
+                  ? Image.network(serviceImage, fit: BoxFit.cover)
+                  : const Icon(Icons.image, size: 40),
             ),
-          ),
+            8.width,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    serviceName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '$pickup Alamat Pengambilan',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    '$delivery Alamat Pengiriman',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
-      ],
+      ),
     );
   }
 }
