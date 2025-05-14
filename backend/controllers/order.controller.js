@@ -190,7 +190,7 @@ export const createOrder = async (req, res) => {
         user_id, service_id, total_address, subtotal, date, pickup_name,
         pickup_phone_number, pickup_address, pickup_notes, type, weight,
         take_package_on_behalf_of, lat, long, courier_id, visit_order,
-        proof_image, payment_status, order_status, address_status
+      payment_status, order_status
       ) VALUES (
         ${user_id}, ${service_id}, ${total_address}, ${subtotal}, ${
       pickupDetails.date
@@ -205,7 +205,7 @@ export const createOrder = async (req, res) => {
       pickupDetails.pickup_lat
     }, ${
       pickupDetails.pickup_lng
-    }, ${assignedCourierId}, ${null}, ${null}, 'waiting', 'waiting', 'waiting'
+    }, ${assignedCourierId}, ${null}, 'waiting', 'waiting'
       ) RETURNING *;
     `;
 

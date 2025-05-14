@@ -72,4 +72,26 @@ class AssignmentServices {
       throw Exception('${e.toString()}');
     }
   }
+
+  Future<Map<String, dynamic>> generateRoute(
+      int courierId, String initial_location, dynamic dataa) async {
+    try {
+      final endpoint = Uri.parse("${url}/api/couriers/get-route");
+      final response = await http.post(
+        endpoint,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "courier_id": courierId,
+          "initial_location": initial_location,
+          "data": dataa
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
 }

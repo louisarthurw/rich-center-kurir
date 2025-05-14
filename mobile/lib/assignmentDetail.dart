@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:mobile/login.dart';
 import 'package:mobile/main.dart';
 import 'package:mobile/services/api/assignmentServices.dart';
@@ -26,6 +27,9 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   Map<String, dynamic>? assignmentData;
   Map<String, dynamic>? _selectedMarkerData;
   GoogleMapController? mapController;
+
+  final Location _location = Location();
+  bool _isGeneratingRoute = false;
 
   @override
   void initState() {
@@ -57,13 +61,15 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
 
       final response = widget.id == null
           ? await AssignmentServices().getAssignment(courier['id'], widget.date)
-          : await AssignmentServices().getAssignmentByOrderId(courier['id'], widget.id);
+          : await AssignmentServices()
+              .getAssignmentByOrderId(courier['id'], widget.id);
 
       if (response['success'] == true && mounted) {
         setState(() {
           assignmentData = response['data'];
           isLoading = false;
         });
+        print('ppp: $assignmentData');
       }
     } catch (e) {
       toast('Error loading assignment data: $e');
@@ -245,6 +251,86 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
     return const LatLng(-7.2575, 112.7521);
   }
 
+  bool _showGenerateRouteButton() {
+    final pickupList = assignmentData?['pickup_details'] ?? [];
+    for (final pickup in pickupList) {
+      if (pickup['visit_order'] == null) {
+        return true;
+      }
+    }
+
+    final deliveryGroups = assignmentData?['delivery_details'] ?? [];
+    for (final group in deliveryGroups) {
+      for (final delivery in group) {
+        if (delivery['visit_order'] == null) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  Future<void> _handleGenerateRoute() async {
+    if (_isGeneratingRoute) return;
+
+    setState(() => _isGeneratingRoute = true);
+
+    try {
+      // Cek apakah location service enabled
+      bool serviceEnabled = await _location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) {
+          toast('Location services anda sedang dimatikan, tolong nyalakan.');
+          return;
+        }
+      }
+
+      // Cek apakah punya location permission
+      PermissionStatus permissionStatus = await _location.hasPermission();
+      if (permissionStatus == PermissionStatus.denied) {
+        permissionStatus = await _location.requestPermission();
+        if (permissionStatus != PermissionStatus.granted) {
+          toast(
+              'Berikan izin mengakses lokasi untuk lanjut ke proses selanjutnya.');
+          return;
+        }
+      }
+
+      // Get current location
+      LocationData locationData = await _location.getLocation();
+      String initialLocation =
+          "${locationData.latitude},${locationData.longitude}";
+
+      // Get courier ID
+      final courierString = sp.getString('courier');
+      if (courierString == null) return;
+      final courier = jsonDecode(courierString);
+      int courierId = courier['id'];
+
+      // Call API
+      final response = await AssignmentServices().generateRoute(
+        courierId,
+        initialLocation,
+        assignmentData,
+      );
+
+      if (response['success'] == true && mounted) {
+        toast('Route generated successfully');
+        await _getAssignment();
+      } else {
+        toast('Failed to generate route: ${response['message']}');
+      }
+    } catch (e) {
+      toast('Error: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingRoute = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -269,6 +355,42 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                     left: 0,
                     right: 0,
                     child: _buildOverlayCard(_selectedMarkerData!),
+                  ),
+                if (_showGenerateRouteButton())
+                  Positioned(
+                    bottom: 20,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: _handleGenerateRoute,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: _isGeneratingRoute
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Generate Route',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
                   ),
               ],
             ),

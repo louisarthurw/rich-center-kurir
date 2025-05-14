@@ -110,11 +110,6 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
-
-    // proof_image VARCHAR(255),
-    // address_status VARCHAR(255) NOT NULL DEFAULT 'waiting',
-
-    // tambahin proof_coordinate sama distance (?)
     await sql`
     CREATE TABLE IF NOT EXISTS order_details (
         id SERIAL PRIMARY KEY,
@@ -130,6 +125,9 @@ async function initDB() {
         visit_order INTEGER,
         proof_image VARCHAR(255),
         address_status VARCHAR(10) NOT NULL DEFAULT 'waiting',
+        initial_coordinate VARCHAR(255),
+        proof_coordinate VARCHAR(255),
+        total_route_distance INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
