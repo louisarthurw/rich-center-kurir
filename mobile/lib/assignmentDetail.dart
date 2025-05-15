@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:mobile/login.dart';
 import 'package:mobile/main.dart';
 import 'package:mobile/services/api/assignmentServices.dart';
 import 'package:mobile/services/api/authServices.dart';
+import 'package:mobile/services/constResources.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class AssignmentDetailPage extends StatefulWidget {
@@ -27,6 +29,11 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   Map<String, dynamic>? assignmentData;
   Map<String, dynamic>? _selectedMarkerData;
   GoogleMapController? mapController;
+  PolylinePoints polylinePoints = PolylinePoints();
+  Map<PolylineId, Polyline> polylines = {};
+  List<LatLng> routePoints = [];
+  List<Map<String, dynamic>> courierRouteSequence = [];
+  String? initialCoordinate;
 
   final Location _location = Location();
   bool _isGeneratingRoute = false;
@@ -69,7 +76,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
           assignmentData = response['data'];
           isLoading = false;
         });
-        print('ppp: $assignmentData');
+        _buildRouteSequence();
       }
     } catch (e) {
       toast('Error loading assignment data: $e');
@@ -77,66 +84,323 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
     }
   }
 
-  Set<Marker> _buildMarkers() {
-    final Set<Marker> markers = {};
+  void _buildRouteSequence() {
+    if (assignmentData == null) return;
 
-    final pickupList = assignmentData?['pickup_details'] ?? [];
-    for (int i = 0; i < pickupList.length; i++) {
-      final item = pickupList[i];
-      final lat = double.tryParse(item['lat'] ?? '');
-      final lng = double.tryParse(item['long'] ?? '');
+    final courierString = sp.getString('courier');
+    if (courierString == null) return;
+    final courier = jsonDecode(courierString);
+    int courierId = courier['id'];
 
-      if (lat != null && lng != null) {
-        markers.add(Marker(
-          markerId: MarkerId('pickup_$i'),
-          position: LatLng(lat, lng),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          onTap: () {
-            setState(() {
-              _selectedMarkerData = {
-                'type': 'pickup',
-                'name': item['pickup_name'],
-                'phone': item['pickup_phone_number'],
-                'address': item['pickup_address'],
-                'notes': item['pickup_notes'] ?? '',
-                'take_on_behalf': item['take_package_on_behalf_of'] ?? '',
-              };
-            });
-          },
-        ));
+    courierRouteSequence.clear();
+    routePoints.clear();
+    polylines.clear();
+
+    bool hasRouteSequence = false;
+
+    final deliveryGroups = assignmentData?['delivery_details'] ?? [];
+    if (deliveryGroups.isNotEmpty && deliveryGroups[0].isNotEmpty) {
+      initialCoordinate =
+          deliveryGroups[0][0]['initial_coordinate']?.toString();
+    }
+
+    // ambil koordinat awal kurir
+    if (initialCoordinate != null && initialCoordinate!.isNotEmpty) {
+      final parts = initialCoordinate!.split(',');
+      if (parts.length == 2) {
+        final lat = double.tryParse(parts[0].trim());
+        final lng = double.tryParse(parts[1].trim());
+        if (lat != null && lng != null) {
+          courierRouteSequence.add({
+            'type': 'initial',
+            'position': LatLng(lat, lng),
+            'visit_order': 0,
+            'title': 'Starting Point',
+          });
+          routePoints.add(LatLng(lat, lng));
+          hasRouteSequence = true;
+        }
       }
     }
 
+    // rute hanya ada saat sudah generate route (ada koordinat awal kurir)
+    if (hasRouteSequence) {
+      // ambil koordinat pickup
+      final pickupList = assignmentData?['pickup_details'] ?? [];
+      for (final pickup in pickupList) {
+        try {
+          final courierIdsStr = pickup['courier_id']?.toString();
+          final visitOrdersStr = pickup['visit_order']?.toString();
+
+          if (courierIdsStr == null || visitOrdersStr == null) continue;
+
+          final courierIds = courierIdsStr
+              .split(',')
+              .map((e) => int.tryParse(e.trim()))
+              .whereType<int>()
+              .toList();
+          final visitOrders = visitOrdersStr
+              .split(',')
+              .map((e) => int.tryParse(e.trim()))
+              .whereType<int>()
+              .toList();
+
+          if (courierIds.isEmpty || visitOrders.isEmpty) continue;
+
+          final courierIndex = courierIds.indexOf(courierId);
+          if (courierIndex != -1 && courierIndex < visitOrders.length) {
+            final visitOrder = visitOrders[courierIndex];
+            final lat = double.tryParse(pickup['lat']?.toString() ?? '');
+            final lng = double.tryParse(pickup['long']?.toString() ?? '');
+
+            if (lat != null && lng != null) {
+              courierRouteSequence.add({
+                'type': 'pickup',
+                'position': LatLng(lat, lng),
+                'visit_order': visitOrder,
+                'data': pickup,
+                'title': pickup['pickup_name']?.toString() ?? 'Pickup Location',
+                'address': pickup['pickup_address']?.toString() ??
+                    'Alamat Pengambilan',
+              });
+            }
+          }
+        } catch (e) {
+          debugPrint('Error processing pickup location: $e');
+        }
+      }
+
+      // ambil koordinat delivery
+      for (final group in deliveryGroups) {
+        for (final delivery in group) {
+          try {
+            final deliveryCourierId = delivery['courier_id'];
+            final visitOrder = delivery['visit_order'];
+
+            if (deliveryCourierId != courierId || visitOrder == null) continue;
+
+            final lat = double.tryParse(delivery['lat']?.toString() ?? '');
+            final lng = double.tryParse(delivery['long']?.toString() ?? '');
+
+            if (lat != null && lng != null) {
+              courierRouteSequence.add({
+                'type': 'delivery',
+                'position': LatLng(lat, lng),
+                'visit_order': visitOrder is int
+                    ? visitOrder
+                    : int.tryParse(visitOrder.toString()) ?? 0,
+                'data': delivery,
+                'title': delivery['delivery_name']?.toString() ??
+                    'Delivery Location',
+                'address': delivery['delivery_address']?.toString() ??
+                    'Alamat Pengiriman',
+              });
+            }
+          } catch (e) {
+            debugPrint('Error processing delivery location: $e');
+          }
+        }
+      }
+
+      // urutkan berdasarkan visit order
+      courierRouteSequence.sort((a, b) {
+        final aOrder = a['visit_order'] as int;
+        final bOrder = b['visit_order'] as int;
+        return aOrder.compareTo(bOrder);
+      });
+
+      // simpan urutan koordinat yang harus dituju berdasarkan visit order
+      routePoints.clear();
+      for (var point in courierRouteSequence) {
+        routePoints.add(point['position'] as LatLng);
+      }
+
+      // buat polyline (rute)
+      if (routePoints.length > 1) {
+        _getPolyline();
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future<void> _getPolyline() async {
+    if (routePoints.length < 2) return;
+
+    try {
+      List<PointLatLng> points = routePoints
+          .map((latLng) => PointLatLng(latLng.latitude, latLng.longitude))
+          .toList();
+
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: GOOGLE_MAPS_API_KEY,
+        request: PolylineRequest(
+          origin: points.first,
+          destination: points.last,
+          mode: TravelMode.driving,
+          wayPoints: points.length > 2
+              ? points
+                  .sublist(1, points.length - 1)
+                  .map((p) => PolylineWayPoint(
+                      location: "${p.latitude},${p.longitude}"))
+                  .toList()
+              : [],
+        ),
+      );
+
+      if (result.points.isNotEmpty) {
+        List<LatLng> polylineCoordinates = result.points
+            .map((point) => LatLng(point.latitude, point.longitude))
+            .toList();
+
+        PolylineId id = PolylineId('route');
+        Polyline polyline = Polyline(
+          polylineId: id,
+          color: Colors.blue,
+          points: polylineCoordinates,
+          width: 4,
+        );
+
+        setState(() {
+          polylines[id] = polyline;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting polyline: $e');
+    }
+  }
+
+  Set<Marker> _buildMarkers() {
+    final Set<Marker> markers = {};
+
     final deliveryGroups = assignmentData?['delivery_details'] ?? [];
-    for (int i = 0; i < deliveryGroups.length; i++) {
-      final group = deliveryGroups[i];
-      for (int j = 0; j < group.length; j++) {
-        final item = group[j];
-        final lat = double.tryParse(item['lat'] ?? '');
-        final lng = double.tryParse(item['long'] ?? '');
+    final pickupList = assignmentData?['pickup_details'] ?? [];
+    final courierString = sp.getString('courier');
+    final courier = courierString != null ? jsonDecode(courierString) : null;
+    final courierId = courier?['id'];
+
+    // pickup markers
+    for (int i = 0; i < pickupList.length; i++) {
+      try {
+        final pickup = pickupList[i];
+        final lat = double.tryParse(pickup['lat']?.toString() ?? '');
+        final lng = double.tryParse(pickup['long']?.toString() ?? '');
 
         if (lat != null && lng != null) {
+          dynamic visitOrder;
+          final courierIdsStr = pickup['courier_id']?.toString();
+          final visitOrdersStr = pickup['visit_order']?.toString();
+
+          if (courierId != null &&
+              courierIdsStr != null &&
+              visitOrdersStr != null) {
+            try {
+              final courierIds =
+                  courierIdsStr.split(',').map((e) => e.trim()).toList();
+              final visitOrders =
+                  visitOrdersStr.split(',').map((e) => e.trim()).toList();
+
+              final index = courierIds.indexOf(courierId.toString());
+              if (index != -1 && index < visitOrders.length) {
+                visitOrder = int.tryParse(visitOrders[index]) ?? 0;
+              }
+            } catch (e) {
+              debugPrint('Error parsing visit order: $e');
+            }
+          }
+
           markers.add(Marker(
-            markerId: MarkerId('delivery_${i}_$j'),
+            markerId: MarkerId('pickup_$i'),
             position: LatLng(lat, lng),
             icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
             onTap: () {
               setState(() {
                 _selectedMarkerData = {
-                  'type': 'delivery',
-                  'id': item['order_detail_id'],
-                  'name': item['delivery_name'],
-                  'phone': item['delivery_phone_number'],
-                  'address': item['delivery_address'],
-                  'sender_name': item['sender_name'] ?? '',
-                  'address_status': item['address_status'],
-                  'proof_image': item['proof_image'] ?? '',
+                  'type': 'pickup',
+                  'name': pickup['pickup_name']?.toString() ?? '',
+                  'phone': pickup['pickup_phone_number']?.toString() ?? '',
+                  'address': pickup['pickup_address']?.toString() ?? '',
+                  'notes': pickup['pickup_notes']?.toString() ?? '',
+                  'take_on_behalf':
+                      pickup['take_package_on_behalf_of']?.toString() ?? '',
+                  'visit_order': visitOrder,
                 };
               });
             },
           ));
         }
+      } catch (e) {
+        debugPrint('Error creating pickup marker: $e');
+      }
+    }
+
+    // delivery markers
+    int deliveryIndex = 0;
+    for (final group in deliveryGroups) {
+      for (final delivery in group) {
+        try {
+          if (courierId != null && delivery['courier_id'] != courierId)
+            continue;
+
+          final lat = double.tryParse(delivery['lat']?.toString() ?? '');
+          final lng = double.tryParse(delivery['long']?.toString() ?? '');
+
+          if (lat != null && lng != null) {
+            markers.add(Marker(
+              markerId: MarkerId('delivery_${deliveryIndex++}'),
+              position: LatLng(lat, lng),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueRed),
+              onTap: () {
+                setState(() {
+                  _selectedMarkerData = {
+                    'type': 'delivery',
+                    'id': delivery['order_detail_id']?.toString(),
+                    'name': delivery['delivery_name']?.toString() ?? '',
+                    'phone':
+                        delivery['delivery_phone_number']?.toString() ?? '',
+                    'address': delivery['delivery_address']?.toString() ?? '',
+                    'sender_name': delivery['sender_name']?.toString() ?? '',
+                    'address_status': delivery['address_status']?.toString(),
+                    'proof_image': delivery['proof_image']?.toString(),
+                    'visit_order': delivery['visit_order'],
+                  };
+                });
+              },
+            ));
+          }
+        } catch (e) {
+          debugPrint('Error creating delivery marker: $e');
+        }
+      }
+    }
+
+    // initial marker (posisi awal kurir)
+    for (int i = 0; i < courierRouteSequence.length; i++) {
+      try {
+        final point = courierRouteSequence[i];
+        if (point['type'] == 'initial') {
+          final position = point['position'] as LatLng;
+          markers.add(Marker(
+            markerId: MarkerId('initial_$i'),
+            position: position,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueYellow),
+            onTap: () {
+              setState(() {
+                _selectedMarkerData = {
+                  'type': 'initial',
+                  'position': position,
+                  'visit_order': point['visit_order'],
+                  'title': point['title'] as String,
+                };
+              });
+            },
+          ));
+        }
+      } catch (e) {
+        debugPrint('Error creating initial marker: $e');
       }
     }
 
@@ -162,10 +426,11 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
             children: [
               Expanded(
                 child: Text(
-                  data['address'] ?? '-',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                    data['type'] == 'initial'
+                        ? 'Lokasi Awal Kurir'
+                        : data['address']?.toString() ?? '-',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
               ),
               GestureDetector(
                 onTap: () => setState(() => _selectedMarkerData = null),
@@ -174,35 +439,41 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
             ],
           ),
           20.height,
-          _infoLine("Nama", data['name'] ?? '-'),
-          _infoLine("Nomor Telepon", data['phone'] ?? '-'),
-          20.height,
+          if (data['visit_order'] != null)
+            _infoLine("Urutan Rute", data['visit_order'].toString()),
+          if (data['type'] != 'initial') ...[
+            _infoLine("Nama", data['name']?.toString() ?? '-'),
+            _infoLine("Nomor Telepon", data['phone']?.toString() ?? '-'),
+            20.height,
+          ],
           if (data['type'] == 'pickup') ...[
-            _infoLine("Catatan",
-                data['notes']?.isNotEmpty == true ? data['notes']! : "-"),
-            _infoLine("Ambil paket di rumah orang lain",
-                data['take_on_behalf']?.isNotEmpty == true ? "Ya" : "Tidak"),
+            _infoLine(
+                "Catatan",
+                data['notes']?.toString().isNotEmpty == true
+                    ? data['notes']!.toString()
+                    : "-"),
+            _infoLine(
+                "Ambil paket di rumah orang lain",
+                data['take_on_behalf']?.toString().isNotEmpty == true
+                    ? "Ya"
+                    : "Tidak"),
             _infoLine(
                 "Ambil kiriman atas nama",
-                data['take_on_behalf']?.isNotEmpty == true
-                    ? data['take_on_behalf']!
+                data['take_on_behalf']?.toString().isNotEmpty == true
+                    ? data['take_on_behalf']!.toString()
                     : "-"),
           ],
           if (data['type'] == 'delivery') ...[
-            _infoLine("Dropship",
-                data['sender_name']?.isNotEmpty == true ? "Ya" : "Tidak"),
+            _infoLine(
+                "Dropship",
+                data['sender_name']?.toString().isNotEmpty == true
+                    ? "Ya"
+                    : "Tidak"),
             _infoLine(
                 "Nama Pengirim",
-                data['sender_name']?.isNotEmpty == true
-                    ? data['sender_name']!
+                data['sender_name']?.toString().isNotEmpty == true
+                    ? data['sender_name']!.toString()
                     : "-"),
-            // _infoLine("Status Pengiriman", data['address_status'] ?? "-"),
-            // _infoLine(
-            //     "Bukti Foto",
-            //     data['proof_image']?.isNotEmpty == true
-            //         ? data['proof_image']
-            //         : "-"),
-            // _infoLine("ID", data['id'].toString()),
           ],
         ],
       ),
@@ -227,12 +498,15 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   }
 
   LatLng _getInitialCameraPosition() {
-    final deliveryGroups = assignmentData?['delivery_details'];
+    if (routePoints.isNotEmpty) {
+      return routePoints.first;
+    }
 
+    final deliveryGroups = assignmentData?['delivery_details'];
     if (deliveryGroups != null && deliveryGroups.isNotEmpty) {
       final cluster = deliveryGroups[0];
       if (cluster.isNotEmpty) {
-        final centroidStr = cluster[0]['cluster_centroid'];
+        final centroidStr = cluster[0]['cluster_centroid']?.toString();
         if (centroidStr != null && centroidStr.isNotEmpty) {
           final parts = centroidStr.split(',');
 
@@ -252,23 +526,21 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   }
 
   bool _showGenerateRouteButton() {
-    final pickupList = assignmentData?['pickup_details'] ?? [];
-    for (final pickup in pickupList) {
-      if (pickup['visit_order'] == null) {
-        return true;
-      }
-    }
+    if (assignmentData == null) return false;
 
+    bool hasInitialCoordinate = false;
     final deliveryGroups = assignmentData?['delivery_details'] ?? [];
     for (final group in deliveryGroups) {
       for (final delivery in group) {
-        if (delivery['visit_order'] == null) {
-          return true;
+        if (delivery['initial_coordinate'] != null) {
+          hasInitialCoordinate = true;
+          break;
         }
       }
+      if (hasInitialCoordinate) break;
     }
 
-    return false;
+    return !hasInitialCoordinate;
   }
 
   Future<void> _handleGenerateRoute() async {
@@ -277,39 +549,38 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
     setState(() => _isGeneratingRoute = true);
 
     try {
-      // Cek apakah location service enabled
+      // cek apakah location sevice aktif
       bool serviceEnabled = await _location.serviceEnabled();
       if (!serviceEnabled) {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
-          toast('Location services anda sedang dimatikan, tolong nyalakan.');
+          toast('Location services are disabled. Please enable them.');
           return;
         }
       }
 
-      // Cek apakah punya location permission
+      // cek apakah punya permission untuk mengambil lokasi
       PermissionStatus permissionStatus = await _location.hasPermission();
       if (permissionStatus == PermissionStatus.denied) {
         permissionStatus = await _location.requestPermission();
         if (permissionStatus != PermissionStatus.granted) {
-          toast(
-              'Berikan izin mengakses lokasi untuk lanjut ke proses selanjutnya.');
+          toast('Location permission is required to generate routes.');
           return;
         }
       }
 
-      // Get current location
+      // ambil current location
       LocationData locationData = await _location.getLocation();
       String initialLocation =
           "${locationData.latitude},${locationData.longitude}";
 
-      // Get courier ID
+      // ambil id kurir
       final courierString = sp.getString('courier');
       if (courierString == null) return;
       final courier = jsonDecode(courierString);
       int courierId = courier['id'];
 
-      // Call API
+      // call api
       final response = await AssignmentServices().generateRoute(
         courierId,
         initialLocation,
@@ -318,7 +589,20 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
 
       if (response['success'] == true && mounted) {
         toast('Route generated successfully');
-        await _getAssignment();
+        final widget_id = widget.id;
+        final widget_date = widget.date;
+
+        // refresh page
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AssignmentDetailPage(
+              id: widget_id,
+              date: widget_date,
+            ),
+          ),
+        );
       } else {
         toast('Failed to generate route: ${response['message']}');
       }
@@ -334,7 +618,129 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Assignment')),
+      appBar: AppBar(
+        title: const Text('Detail Assignment'),
+        actions: [
+          if (!isLoading && courierRouteSequence.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.list),
+              onPressed: () {
+                int pickupCount = courierRouteSequence
+                    .where((p) => p['type'] == 'pickup')
+                    .length;
+                int deliveryCount = courierRouteSequence
+                    .where((p) => p['type'] == 'delivery')
+                    .length;
+
+                String formatTime(int seconds) {
+                  if (seconds == null || seconds <= 0) return "0s";
+
+                  int hours = seconds ~/ 3600;
+                  int minutes = (seconds % 3600) ~/ 60;
+                  int remainingSeconds = seconds % 60;
+
+                  if (hours == 0 && minutes == 0) {
+                    return '${remainingSeconds} detik';
+                  } else if (hours == 0) {
+                    return '${minutes.toString().padLeft(2, '0')} menit ${remainingSeconds.toString().padLeft(2, '0')} detik';
+                  } else {
+                    return '${hours.toString().padLeft(2, '0')} jam ${minutes.toString().padLeft(2, '0')} menit ${remainingSeconds.toString().padLeft(2, '0')} detik';
+                  }
+                }
+
+                int totalSeconds = assignmentData?['delivery_details'][0][0]
+                    ['total_travel_time'];
+
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Detail Rute'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.store_mall_directory),
+                                    const SizedBox(width: 8),
+                                    Text('$pickupCount Lokasi Pengambilan'),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on),
+                                    const SizedBox(width: 8),
+                                    Text('$deliveryCount Lokasi Pengiriman'),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.timer),
+                                    const SizedBox(width: 8),
+                                    Text(formatTime(totalSeconds)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(),
+                          // urutan rute
+                          ...courierRouteSequence.map((point) {
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: CircleAvatar(
+                                backgroundColor: point['type'] == 'initial'
+                                    ? Colors.yellow
+                                    : point['type'] == 'pickup'
+                                        ? Colors.blue
+                                        : Colors.red,
+                                child: Text(
+                                  point['visit_order'].toString(),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              title: Text(
+                                point['type'] == 'initial'
+                                    ? (point['position'] != null
+                                        ? '${point['position'].latitude},${point['position'].longitude}'
+                                        : 'Location')
+                                    : (point['address']?.toString() ??
+                                        'Location'),
+                              ),
+                              subtitle: Text(
+                                point['type'] == 'initial'
+                                    ? 'Lokasi Awal Kurir'
+                                    : point['type'] == 'pickup'
+                                        ? 'Lokasi Pengambilan'
+                                        : 'Lokasi Pengiriman',
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Tutup'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
@@ -346,12 +752,17 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                     zoom: 13,
                   ),
                   markers: _buildMarkers(),
+                  polylines: Set<Polyline>.of(polylines.values),
                   onTap: (_) => setState(() => _selectedMarkerData = null),
                   mapToolbarEnabled: false,
                 ),
                 if (_selectedMarkerData != null)
                   Positioned(
-                    top: _selectedMarkerData!['type'] == 'pickup' ? 40 : 60,
+                    top: _selectedMarkerData!['type'] == 'initial'
+                        ? 180
+                        : _selectedMarkerData!['type'] == 'pickup'
+                            ? 20
+                            : 40,
                     left: 0,
                     right: 0,
                     child: _buildOverlayCard(_selectedMarkerData!),

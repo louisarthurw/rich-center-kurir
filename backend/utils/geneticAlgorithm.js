@@ -1,6 +1,6 @@
 export function runGA(timeMatrix, coordinates) {
   const POP_SIZE = 100;
-  const GENERATIONS = 100;
+  const GENERATIONS = 200;
   const MUTATION_RATE = 0.1;
 
   const initialIndex = 0;

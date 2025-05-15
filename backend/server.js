@@ -127,7 +127,7 @@ async function initDB() {
         address_status VARCHAR(10) NOT NULL DEFAULT 'waiting',
         initial_coordinate VARCHAR(255),
         proof_coordinate VARCHAR(255),
-        total_route_distance INTEGER,
+        total_travel_time INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;

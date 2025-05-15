@@ -354,6 +354,9 @@ export const getAssignmentCourierByDate = async (req, res) => {
           visit_order,
           proof_image,
           address_status,
+          initial_coordinate,
+          proof_coordinate,
+          total_travel_time,
           created_at,
           updated_at
         FROM order_details
@@ -428,6 +431,9 @@ export const getAssignmentCourierByOrderId = async (req, res) => {
           visit_order,
           proof_image,
           address_status,
+          initial_coordinate,
+          proof_coordinate,
+          total_travel_time,
           created_at,
           updated_at
         FROM order_details

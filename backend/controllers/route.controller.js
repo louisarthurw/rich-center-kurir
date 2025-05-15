@@ -102,7 +102,7 @@ export const generateRoute = async (req, res) => {
           UPDATE order_details
           SET visit_order = ${visitOrder},
               initial_coordinate = ${initial_location},
-              total_route_distance = ${bestTime}
+              total_travel_time = ${bestTime}
           WHERE id = ${deliveryId}
         `;
       }
@@ -123,10 +123,19 @@ export const generateRoute = async (req, res) => {
         `;
 
         const courierStr = result[0]?.courier_id;
+        const visitStr = result[0]?.visit_order;
+
         const courierList = courierStr.split(",").map((id) => parseInt(id));
 
+        let visitArr;
+
         // tentukan urutan untuk array visit_order
-        const visitArr = new Array(courierList.length).fill(0);
+        if (visitStr && visitStr !== "") {
+          visitArr = visitStr.split(",").map((val) => parseInt(val));
+        } else {
+          visitArr = new Array(courierList.length).fill(0);
+        }
+
         const indexInCourierList = courierList.indexOf(courier_id);
         if (indexInCourierList !== -1) {
           // posisi kunjungan kurir ke lokasi pickup ini
