@@ -526,7 +526,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
             ],
           ),
           20.height,
-          if (data['visit_order'] != null)
+          if (data['visit_order'] != null && !_showGenerateRouteButton())
             _infoLine("Urutan Rute", data['visit_order'].toString()),
           if (data['type'] != 'initial') ...[
             _infoLine("Nama", data['name']?.toString() ?? '-'),

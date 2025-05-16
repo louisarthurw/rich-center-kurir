@@ -61,7 +61,8 @@ export const getOrderById = async (req, res) => {
         c.name AS courier_name,
         od.visit_order,
         od.proof_image,
-        od.address_status
+        od.address_status,
+        od.proof_coordinate
       FROM order_details od
       LEFT JOIN couriers c ON od.courier_id = c.id
       WHERE od.order_id = ${id}

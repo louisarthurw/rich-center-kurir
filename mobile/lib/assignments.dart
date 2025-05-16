@@ -63,6 +63,8 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
             groupedAssignments = processedAssignments;
             isLoading = false;
           });
+          print('assignmentData: $assignmentData');
+          print('groupedAssignments: $groupedAssignments');
         }
       }
     } catch (e) {
@@ -126,6 +128,17 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           });
         }).length;
 
+        // Get status order
+        final groupDeliveryDetails = deliveryDetails.where((delivery) {
+          final deliveryMap = delivery as Map<String, dynamic>;
+          return regularServices.any((pickup) {
+            final pickupMap = pickup as Map<String, dynamic>;
+            return pickupMap['order_id'] == deliveryMap['order_id'];
+          });
+        }).toList();
+
+        final status = _determineStatus(groupDeliveryDetails);
+
         if (regularPickupCount > 0) {
           result.add({
             'id': null,
@@ -146,6 +159,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
             'serviceName': serviceName,
             'serviceImage': serviceImage,
             'isGrouped': true,
+            'status': status,
           });
         }
       }
@@ -180,6 +194,9 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           return deliveryMap['order_id'] == pickupMap['order_id'];
         }).toList();
 
+        // Get status order
+        final status = _determineStatus(orderDeliveries);
+
         result.add({
           'id': pickupMap['order_id'],
           'date': formattedDate,
@@ -193,6 +210,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           'serviceName': serviceName,
           'serviceImage': serviceImage,
           'isGrouped': false,
+          'status': status,
         });
       }
     }
@@ -200,6 +218,23 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
     result.sort((a, b) => b['originalDate'].compareTo(a['originalDate']));
 
     return result;
+  }
+
+  String _determineStatus(List<dynamic> deliveryDetails) {
+    if (deliveryDetails.isEmpty) return 'waiting';
+
+    final allWaiting = deliveryDetails.every((delivery) =>
+        (delivery as Map<String, dynamic>)['address_status'] == 'waiting');
+    final allDelivered = deliveryDetails.every((delivery) =>
+        (delivery as Map<String, dynamic>)['address_status'] == 'delivered');
+
+    if (allWaiting) {
+      return 'waiting';
+    } else if (allDelivered) {
+      return 'finished';
+    } else {
+      return 'ongoing';
+    }
   }
 
   String _formatDate(DateTime date) {
@@ -266,6 +301,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
                       delivery: assignment['deliveryCount'],
                       serviceName: assignment['serviceName'],
                       serviceImage: assignment['serviceImage'],
+                      status: assignment['status'],
                     ))
                 .toList(),
           ],
@@ -281,7 +317,23 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
     required int delivery,
     required String serviceName,
     required String serviceImage,
+    required String status,
   }) {
+    Color statusColor;
+    switch (status) {
+      case 'waiting':
+        statusColor = Colors.blue;
+        break;
+      case 'ongoing':
+        statusColor = Colors.orange;
+        break;
+      case 'finished':
+        statusColor = Colors.green;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -321,12 +373,38 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    serviceName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          serviceName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: statusColor),
+                        ),
+                        child: Text(
+                          status.toUpperCase(),
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     '$pickup Alamat Pengambilan',

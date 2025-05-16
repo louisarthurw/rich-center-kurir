@@ -302,7 +302,9 @@ const OrderDetailPage = () => {
                   </div>
                 </div>
 
-                {pickup_details.lat && pickup_details.long && user.role === "admin" &&(
+                {pickup_details.lat &&
+                  pickup_details.long &&
+                  user.role === "admin" && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Titik Koordinat
@@ -560,7 +562,7 @@ const OrderDetailPage = () => {
                     </div>
                   </div>
 
-                  {detail.lat && detail.long && user.role === "admin" &&(
+                  {detail.lat && detail.long && user.role === "admin" && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Titik Koordinat
@@ -662,7 +664,7 @@ const OrderDetailPage = () => {
                   )}
 
                   {detail.proof_image && (
-                    <div>
+                    <div className="relative">
                       <label className="block text-sm font-medium text-gray-300">
                         Bukti Foto
                       </label>
@@ -672,6 +674,11 @@ const OrderDetailPage = () => {
                           alt="Bukti Pengiriman"
                           className="block w-full h-auto rounded-md shadow-sm border border-gray-600"
                         />
+                        {detail.proof_coordinate && (
+                          <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white text-lg font-semibold px-2 py-1 rounded">
+                            {`Koordinat : ${detail.proof_coordinate}`}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
