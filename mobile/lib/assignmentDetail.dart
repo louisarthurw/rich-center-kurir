@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
+import 'package:mime/mime.dart';
 import 'package:mobile/login.dart';
 import 'package:mobile/main.dart';
 import 'package:mobile/services/api/assignmentServices.dart';
@@ -37,6 +40,9 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
 
   final Location _location = Location();
   bool _isGeneratingRoute = false;
+
+  File? _selectedImage;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -364,6 +370,8 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                     'sender_name': delivery['sender_name']?.toString() ?? '',
                     'address_status': delivery['address_status']?.toString(),
                     'proof_image': delivery['proof_image']?.toString(),
+                    'proof_coordinate':
+                        delivery['proof_coordinate']?.toString(),
                     'visit_order': delivery['visit_order'],
                   };
                 });
@@ -405,6 +413,85 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
     }
 
     return markers;
+  }
+
+  Future<void> _handleImagePick(bool fromCamera) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+      );
+
+      if (pickedFile != null) {
+        setState(() => _selectedImage = File(pickedFile.path));
+        await _uploadProofImage();
+      }
+    } catch (e) {
+      toast('Error picking image: $e');
+    }
+  }
+
+  Future<void> _uploadProofImage() async {
+    if (_selectedImage == null || _selectedMarkerData == null) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      // cek apakah location sevice aktif
+      bool serviceEnabled = await _location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) {
+          toast('Location services are disabled. Please enable them.');
+          return;
+        }
+      }
+
+      // cek apakah punya permission untuk mengambil lokasi
+      PermissionStatus permissionStatus = await _location.hasPermission();
+      if (permissionStatus == PermissionStatus.denied) {
+        permissionStatus = await _location.requestPermission();
+        if (permissionStatus != PermissionStatus.granted) {
+          toast('Location permission is required to generate routes.');
+          return;
+        }
+      }
+
+      // ambil current location
+      LocationData locationData = await _location.getLocation();
+
+      // Convert image to base64
+      final bytes = await _selectedImage!.readAsBytes();
+      final mimeType = lookupMimeType(_selectedImage!.path);
+      final base64Image = 'data:$mimeType;base64,${base64Encode(bytes)}';
+      print(
+          'id: ${_selectedMarkerData!['id']}, base64img: $base64Image, location: ${locationData.latitude},${locationData.longitude}');
+
+      // Upload proof
+      final response = await AssignmentServices.uploadProofImage(
+        int.parse(_selectedMarkerData!['id']),
+        base64Image,
+        "${locationData.latitude},${locationData.longitude}",
+        assignmentData,
+      );
+
+      if (response['success'] == true && mounted) {
+        toast(response['message']);
+        print('message: ${response['message']}');
+        // Refresh the data
+        await _getAssignment();
+        setState(() {
+          _selectedMarkerData = null;
+          _selectedImage = null;
+        });
+      } else {
+        toast(response['error'] ?? 'Gagal mengupload bukti foto');
+      }
+    } catch (e) {
+      toast('Error upload bukti foto: $e');
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   Widget _buildOverlayCard(Map<String, dynamic> data) {
@@ -474,6 +561,113 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                 data['sender_name']?.toString().isNotEmpty == true
                     ? data['sender_name']!.toString()
                     : "-"),
+            if (data['address_status'] != 'delivered' &&
+                !_showGenerateRouteButton())
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Upload Bukti Foto:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  _isUploading
+                      ? const CircularProgressIndicator()
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                ),
+                                label: const Text('Ambil Foto'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => _handleImagePick(true),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(
+                                  Icons.photo_library,
+                                  color: Colors.white,
+                                ),
+                                label: const Text('Dari Gallery'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => _handleImagePick(false),
+                              ),
+                            ),
+                          ],
+                        ),
+                ],
+              ),
+            if (data['address_status'] == 'delivered' &&
+                data['proof_image'] != null)
+              Column(
+                children: [
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          contentPadding: EdgeInsets.zero,
+                          content: Stack(
+                            children: [
+                              Image.network(data['proof_image']),
+                              if (data['proof_coordinate'] != null)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    color: Colors.black.withAlpha(204),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    child: Text(
+                                      'Koordinat: ${data['proof_coordinate']}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  color: Colors.black.withAlpha(204),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.white),
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Lihat Bukti Foto'),
+                  ),
+                ],
+              ),
           ],
         ],
       ),
@@ -696,6 +890,55 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                           const Divider(),
                           // urutan rute
                           ...courierRouteSequence.map((point) {
+                            String additionalInfo = '';
+                            final courierString = sp.getString('courier');
+                            final courier = courierString != null
+                                ? jsonDecode(courierString)
+                                : null;
+                            final courierId = courier?['id'];
+
+                            if (point['type'] == 'delivery') {
+                              // cari pickup location yang terkait dengan delivery ini
+                              final deliveryData = point['data'];
+                              final orderId = deliveryData['order_id'];
+
+                              // cari pickup details untuk order ini
+                              final pickupList =
+                                  assignmentData?['pickup_details'] ?? [];
+                              for (final pickup in pickupList) {
+                                if (pickup['order_id'] == orderId) {
+                                  final courierIdsStr =
+                                      pickup['courier_id']?.toString();
+                                  final visitOrdersStr =
+                                      pickup['visit_order']?.toString();
+
+                                  if (courierIdsStr != null &&
+                                      visitOrdersStr != null) {
+                                    final courierIds = courierIdsStr
+                                        .split(',')
+                                        .map((e) => e.trim())
+                                        .toList();
+                                    final visitOrders = visitOrdersStr
+                                        .split(',')
+                                        .map((e) => e.trim())
+                                        .toList();
+
+                                    // Cari index courier ini dalam daftar courier_ids
+                                    final courierIndex = courierIds
+                                        .indexOf(courierId.toString());
+                                    if (courierIndex != -1 &&
+                                        courierIndex < visitOrders.length) {
+                                      final pickupVisitOrder =
+                                          visitOrders[courierIndex];
+                                      additionalInfo =
+                                          'Mengantarkan barang dari lokasi nomor $pickupVisitOrder';
+                                    }
+                                  }
+                                  break;
+                                }
+                              }
+                            }
+
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: CircleAvatar(
@@ -717,12 +960,20 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                                     : (point['address']?.toString() ??
                                         'Location'),
                               ),
-                              subtitle: Text(
-                                point['type'] == 'initial'
-                                    ? 'Lokasi Awal Kurir'
-                                    : point['type'] == 'pickup'
-                                        ? 'Lokasi Pengambilan'
-                                        : 'Lokasi Pengiriman',
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    point['type'] == 'initial'
+                                        ? 'Lokasi Awal Kurir'
+                                        : point['type'] == 'pickup'
+                                            ? 'Lokasi Pengambilan'
+                                            : 'Lokasi Pengiriman',
+                                  ),
+                                  if (additionalInfo.isNotEmpty)
+                                    Text(additionalInfo,
+                                        style: TextStyle(fontSize: 12)),
+                                ],
                               ),
                             );
                           }).toList(),

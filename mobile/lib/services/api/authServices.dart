@@ -119,6 +119,8 @@ class AuthServices {
     final token = sp.getString("token");
     final expiry = sp.getInt("token_expires_at");
 
+    print('token: $token');
+
     if (token == null || expiry == null) return false;
 
     return DateTime.now().millisecondsSinceEpoch < expiry;

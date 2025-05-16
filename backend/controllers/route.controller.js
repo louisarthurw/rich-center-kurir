@@ -119,8 +119,9 @@ export const generateRoute = async (req, res) => {
 
         // ambil courier_id tabel orders
         const result = await sql`
-          SELECT courier_id FROM orders WHERE id = ${orderId}
+          SELECT courier_id, visit_order FROM orders WHERE id = ${orderId}
         `;
+        console.log('resss:', result)
 
         const courierStr = result[0]?.courier_id;
         const visitStr = result[0]?.visit_order;

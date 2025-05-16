@@ -1,5 +1,10 @@
 import { sql } from "../config/db.js";
+import cloudinary from "../config/cloudinary.js";
 import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+import { error } from "console";
+
+dotenv.config();
 
 export const getAllCouriers = async (req, res) => {
   try {
@@ -452,6 +457,115 @@ export const getAssignmentCourierByOrderId = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in getAssignmentCourierByOrderId controller", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const uploadBuktiFoto = async (req, res) => {
+  const { id, image, proof_coordinate, data } = req.body;
+
+  try {
+    const allDeliveryDetails = data.delivery_details.flat();
+    const courierId = allDeliveryDetails[0].courier_id;
+
+    // Urutkan delivery details berdasarkan visit_order
+    const pendingDeliveries = allDeliveryDetails
+      .filter(
+        (d) => d.courier_id === courierId && d.address_status !== "delivered"
+      )
+      .sort((a, b) => a.visit_order - b.visit_order);
+
+    // Memastikan yang bisa diupload bukti foto adalah yang visit_order terendah
+    const deliveryToUpload = pendingDeliveries[0];
+    console.log("lokasi visit order terendah: ", deliveryToUpload);
+    if (parseInt(id) !== deliveryToUpload.order_detail_id) {
+      return res.status(400).json({
+        success: false,
+        error: "Ada lokasi yang belum dikunjungi, dilarang mendahului rute",
+      });
+    }
+
+    // Upload gambar ke cloudinary
+    let cloudinaryResponse = null;
+    if (image) {
+      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+        folder: "bukti_foto",
+      });
+    }
+    if (!cloudinaryResponse || !cloudinaryResponse.secure_url) {
+      return res.status(400).json({
+        success: false,
+        message: "Gagal mengunggah gambar ke Cloudinary.",
+      });
+    }
+
+    // Update order_details di database
+    await sql`
+      UPDATE order_details
+      SET
+        proof_image = ${cloudinaryResponse.secure_url},
+        proof_coordinate = ${proof_coordinate},
+        address_status = 'delivered',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+    `;
+
+    const nextDelivery =
+      pendingDeliveries.length > 1 ? pendingDeliveries[1] : null;
+    console.log("lokasi selanjutnya: ", nextDelivery);
+
+    // Jika ada lokasi pengiriman selanjutnya, update address_status menjadi 'ongoing'
+    if (nextDelivery) {
+      await sql`
+        UPDATE order_details
+        SET address_status = 'ongoing', updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${nextDelivery.order_detail_id}
+      `;
+    }
+
+    // Cek status order
+    const orderId = deliveryToUpload.order_id;
+    const orderDetailsStatus = await sql`
+      SELECT address_status
+      FROM order_details
+      WHERE order_id = ${orderId}
+    `;
+
+    console.log("order detail status:", orderDetailsStatus);
+
+    const statuses = orderDetailsStatus.map((row) => row.address_status);
+
+    let newOrderStatus = "waiting";
+
+    const allWaiting = statuses.every((status) => status === "waiting");
+    const allDelivered = statuses.every((status) => status === "delivered");
+    const hasWaiting = statuses.includes("waiting");
+    const hasOngoing = statuses.includes("ongoing");
+
+    console.log("semua status:", statuses);
+
+    if (allWaiting) {
+      newOrderStatus = "waiting";
+    } else if (allDelivered) {
+      newOrderStatus = "finished";
+    } else {
+      newOrderStatus = "ongoing";
+    }
+    console.log("order status:", newOrderStatus);
+
+    // Update order_status pada tabel orders
+    await sql`
+      UPDATE orders
+      SET order_status = ${newOrderStatus}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${orderId}
+    `;
+
+    res.status(200).json({
+      success: true,
+      message: "Berhasil upload bukti foto.",
+    });
+  } catch (error) {
+    console.error("Error in uploadBuktiFoto controller:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };

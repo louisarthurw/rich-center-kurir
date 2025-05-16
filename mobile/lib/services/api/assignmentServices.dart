@@ -94,4 +94,27 @@ class AssignmentServices {
       throw Exception('${e.toString()}');
     }
   }
+
+  static Future<Map<String, dynamic>> uploadProofImage(
+      int id, String image, String proof_coordinate, dynamic dataa) async {
+    try {
+      final endpoint = Uri.parse("${url}/api/couriers/upload-bukti-foto");
+      final response = await http.put(
+        endpoint,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "id": id,
+          "image": image,
+          "proof_coordinate": proof_coordinate,
+          "data": dataa
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
 }
