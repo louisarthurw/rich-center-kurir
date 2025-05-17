@@ -9,7 +9,7 @@ export function runGA(timeMatrix, coordinates) {
   const routeIndices = Array.from({ length: totalPoints }, (_, i) => i).filter(
     (i) => i !== initialIndex
   );
-  
+
   console.log(routeIndices);
 
   function getFitness(route) {
@@ -96,21 +96,34 @@ export function runGA(timeMatrix, coordinates) {
     return fixed;
   }
 
+  function rouletteSelection(population, fitnesses) {
+    const inverted = fitnesses.map((f) => 1 / f);
+    const total = inverted.reduce((acc, val) => acc + val, 0);
+    const probs = inverted.map((val) => val / total);
+
+    const rand = Math.random();
+    let acc = 0;
+    for (let i = 0; i < probs.length; i++) {
+      acc += probs[i];
+      if (rand <= acc) {
+        return population[i];
+      }
+    }
+    return population[population.length - 1]; 
+  }
+
   // INITIALIZE
   let population = Array.from({ length: POP_SIZE }, generateRandomRoute);
-
   let bestTime = Infinity;
   let bestRoute = null;
 
   for (let gen = 0; gen < GENERATIONS; gen++) {
-    population.sort((a, b) => getFitness(a) - getFitness(b));
-    // console.log(population);
+    const fitnesses = population.map(getFitness);
+    const bestIdx = fitnesses.indexOf(Math.min(...fitnesses));
 
-    const currentBest = population[0];
-    const currentBestTime = getFitness(currentBest);
-
-    const currentWorst = population[population.length - 1];
-    const currentWorstTime = getFitness(currentWorst);
+    const currentBest = population[bestIdx];
+    const currentBestTime = fitnesses[bestIdx];
+    const currentWorstTime = Math.max(...fitnesses);
 
     console.log(
       `Generation ${
@@ -123,19 +136,18 @@ export function runGA(timeMatrix, coordinates) {
       bestRoute = currentBest;
     }
 
-    const elites = population.slice(0, 10);
-    const children = [];
+    const newPopulation = [];
 
-    while (children.length < POP_SIZE - elites.length) {
-      const parent1 = elites[Math.floor(Math.random() * elites.length)];
-      const parent2 = elites[Math.floor(Math.random() * elites.length)];
+    while (newPopulation.length < POP_SIZE) {
+      const parent1 = rouletteSelection(population, fitnesses);
+      const parent2 = rouletteSelection(population, fitnesses);
       let child = crossover(parent1, parent2);
       child = mutate(child);
       child = fixDuplicates(child);
-      children.push(child);
+      newPopulation.push(child);
     }
 
-    population = [...elites, ...children];
+    population = newPopulation;
   }
 
   return {

@@ -82,7 +82,7 @@ export const generateRoute = async (req, res) => {
       timeMatrix.push(rowDurations);
     });
 
-    // console.log("time matrix:", timeMatrix);
+    console.log("time matrix:", timeMatrix);
 
     const { bestRoute, bestTime } = runGA(timeMatrix, coordinates);
 

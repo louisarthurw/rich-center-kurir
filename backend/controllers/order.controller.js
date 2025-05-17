@@ -490,13 +490,6 @@ export const assignKurir = async (req, res) => {
       `;
     // console.log(order_details);
 
-    // if (order_details.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     error: "No order details found for the given date and service_id",
-    //   });
-    // }
-
     // Mengubah data lat dan long menjadi vektor
     const vectors = order_details.map((order) => [
       parseFloat(order.lat),
