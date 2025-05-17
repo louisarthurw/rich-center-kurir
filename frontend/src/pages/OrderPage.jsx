@@ -328,6 +328,7 @@ const OrderPage = ({ id }) => {
                     className="block text-sm font-medium text-gray-300"
                   >
                     Tanggal
+                    <span className="text-emerald-300"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -355,6 +356,7 @@ const OrderPage = ({ id }) => {
                     className="block text-sm font-medium text-gray-300"
                   >
                     Nama
+                    <span className="text-emerald-300"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -381,6 +383,7 @@ const OrderPage = ({ id }) => {
                     className="block text-sm font-medium text-gray-300"
                   >
                     Nomor Telepon
+                    <span className="text-emerald-300"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -415,6 +418,7 @@ const OrderPage = ({ id }) => {
                       className="block text-sm font-medium text-gray-300"
                     >
                       Alamat
+                      <span className="text-emerald-300"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -441,7 +445,7 @@ const OrderPage = ({ id }) => {
                     htmlFor="pickup_notes"
                     className="block text-sm font-medium text-gray-300"
                   >
-                    Catatan Tambahan (Opsional)
+                    Catatan Tambahan
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
@@ -467,6 +471,7 @@ const OrderPage = ({ id }) => {
                     className="block text-sm font-medium text-gray-300"
                   >
                     Jenis Barang
+                    <span className="text-emerald-300"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -493,6 +498,7 @@ const OrderPage = ({ id }) => {
                     className="block text-sm font-medium text-gray-300"
                   >
                     Perkiraan Berat (kg)
+                    <span className="text-emerald-300"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -522,6 +528,7 @@ const OrderPage = ({ id }) => {
                       className="block text-sm font-medium text-gray-300"
                     >
                       Ambil Kiriman Atas Nama
+                      <span className="text-emerald-300"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -581,6 +588,7 @@ const OrderPage = ({ id }) => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300">
                       Nama Penerima
+                      <span className="text-emerald-300"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -610,6 +618,7 @@ const OrderPage = ({ id }) => {
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Nama Pengirim
+                        <span className="text-emerald-300"> *</span>
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -648,6 +657,7 @@ const OrderPage = ({ id }) => {
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Alamat
+                        <span className="text-emerald-300"> *</span>
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -677,6 +687,7 @@ const OrderPage = ({ id }) => {
                   <div>
                     <label className="block text-sm font-medium text-gray-300">
                       Nomor Telepon
+                      <span className="text-emerald-300"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

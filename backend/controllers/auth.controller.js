@@ -189,7 +189,7 @@ export const login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user[0].password);
     if (!isPasswordValid) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Invalid password" });
     }
 
@@ -257,7 +257,7 @@ export const loginKurir = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, courier[0].password);
     if (!isPasswordValid) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Password salah" });
     }
 

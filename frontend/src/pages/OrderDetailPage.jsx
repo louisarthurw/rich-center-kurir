@@ -38,6 +38,7 @@ const OrderDetailPage = () => {
   const takePackageOnBehalf = pickup_details?.take_package_on_behalf_of !== "";
   const dropship = delivery_details[0]?.sender_name !== "";
 
+  // console.log(pickup_details);
   // console.log(delivery_details)
 
   useEffect(() => {
@@ -333,7 +334,7 @@ const OrderDetailPage = () => {
                     htmlFor="pickup_notes"
                     className="block text-sm font-medium text-gray-300"
                   >
-                    Catatan Tambahan (Opsional)
+                    Catatan Tambahan
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
@@ -633,7 +634,35 @@ const OrderDetailPage = () => {
                     </div>
                   )}
 
-                  {user.role === "admin" && (
+                  {user.role === "admin" &&
+                    (pickup_details.service_id === 2 ||
+                      pickup_details.service_id === 3 ||
+                      pickup_details.service_id === 4) &&
+                    detail.courier_name && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">
+                          Nama Kurir
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Truck
+                              className="h-5 w-5 text-gray-400"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            readOnly
+                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                            placeholder="John Doe"
+                            value={detail.courier_name}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                  {user.role === "admin" && pickup_details.service_id === 1 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300">
                         Nama Kurir
@@ -698,13 +727,15 @@ const OrderDetailPage = () => {
                   )
                 }
                 className={`${
-                  user.role === "admin" ? "w-1/2" : "w-full"
+                  user.role === "admin" && pickup_details.service_id === 1
+                    ? "w-1/2"
+                    : "w-full"
                 } flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out`}
               >
                 Back
               </button>
 
-              {user.role === "admin" && (
+              {user.role === "admin" && pickup_details.service_id === 1 && (
                 <button
                   type="submit"
                   className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"

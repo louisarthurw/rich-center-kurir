@@ -160,11 +160,12 @@ export const createOrder = async (req, res) => {
     // cek apakah order nya diassign ke kurir mobil atau kurir khusus
     let assignedCourierId = null;
 
+    // service id 2 = kurir flat mobil, kurir mobil mempunyai id 6, jadi saat order ini dibuat, langsung diassgin ke kurir mobil
     if (Number(service_id) === 2) {
       assignedCourierId = 6;
     }
 
-    // if (Number(service_id) === 3 || Number(service_id) === 4) {
+    // service id 4 = kurir same day motor, jadi saat order ini dibuat, langsung di assign ke kurir khusus
     if (Number(service_id) === 4) {
       const specialCourier = await sql`
         SELECT id FROM couriers 
@@ -477,7 +478,7 @@ export const assignKurir = async (req, res) => {
       });
     }
 
-    // Ambil semua alamat pengiriman
+    // Ambil semua alamat pengiriman kurir flat motor
     const order_details = await sql`
         SELECT od.id, od.order_id, od.lat, od.long
         FROM order_details od
@@ -489,12 +490,12 @@ export const assignKurir = async (req, res) => {
       `;
     // console.log(order_details);
 
-    if (order_details.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "No order details found for the given date and service_id",
-      });
-    }
+    // if (order_details.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: "No order details found for the given date and service_id",
+    //   });
+    // }
 
     // Mengubah data lat dan long menjadi vektor
     const vectors = order_details.map((order) => [
@@ -564,6 +565,61 @@ export const assignKurir = async (req, res) => {
       console.log(
         `Updated courier_id for Order ID: ${orderId} with couriers: ${courierIds}`
       );
+    }
+
+    // Assign untuk service kurir request jam ke kurir khusus
+    // Ambil kurir khusus di hari ini
+    const specialCourier = await sql`
+      SELECT id FROM couriers
+      WHERE role = 'special' AND status = 'active'
+      ORDER BY id ASC
+      LIMIT 1
+    `;
+
+    if (specialCourier.length > 0) {
+      const courierId = specialCourier[0].id;
+
+      const requestJamDetails = await sql`
+        SELECT od.id, od.order_id
+        FROM order_details od
+        INNER JOIN orders o ON od.order_id = o.id
+        WHERE DATE(o.date) = ${date}
+          AND o.service_id = 3
+          AND o.payment_status = 'paid'
+          AND od.address_status = 'waiting'
+      `;
+
+      for (const od of requestJamDetails) {
+        await sql`
+          UPDATE order_details
+          SET courier_id = ${courierId}
+          WHERE id = ${od.id}
+        `;
+
+        if (!courierAssignments[od.order_id]) {
+          courierAssignments[od.order_id] = new Set();
+        }
+        courierAssignments[od.order_id].add(courierId);
+
+        console.log(
+          `Assigned Special Courier #${courierId} to OrderDetail ID: ${od.id}`
+        );
+      }
+
+      const updatedOrderIds = [
+        ...new Set(requestJamDetails.map((od) => od.order_id)),
+      ];
+
+      for (const orderId of updatedOrderIds) {
+        await sql`
+      UPDATE orders
+      SET courier_id = ${courierId.toString()}
+      WHERE id = ${orderId}
+    `;
+        console.log(
+          `Updated courier_id for Order ID: ${orderId} with courier: ${courierId}`
+        );
+      }
     }
 
     res.status(200).json({
