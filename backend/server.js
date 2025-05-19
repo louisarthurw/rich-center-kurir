@@ -14,10 +14,14 @@ import customerRoutes from "./routes/customer.route.js";
 import orderRoutes from "./routes/order.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 
+import path from "path";
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5002;
+
+const __dirname = path.resolve();
 
 app.use(express.json({ limit: "10mb" }));
 app.use(helmet({ contentSecurityPolicy: false })); // helmet is a security middleware that helps you protect your app by setting various HTTP headers
@@ -31,6 +35,14 @@ app.use("/api/couriers", courierRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
 
 async function initDB() {
   try {
