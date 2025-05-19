@@ -219,8 +219,12 @@ export const createOrder = async (req, res) => {
           order_id, delivery_name, delivery_address, delivery_phone_number, delivery_notes, 
           sender_name, lat, long, cluster_centroid, courier_id, visit_order, proof_image, address_status
         ) VALUES (
-          ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${detail.delivery_phone_number}, 
-          ${detail.delivery_notes},${detail.sender_name}, ${detail.delivery_lat}, ${
+          ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${
+        detail.delivery_phone_number
+      }, 
+          ${detail.delivery_notes},${detail.sender_name}, ${
+        detail.delivery_lat
+      }, ${
         detail.delivery_lng
       }, ${null}, ${assignedCourierId}, ${null}, ${null}, 'waiting'
         );
@@ -455,6 +459,61 @@ function haversineDistance(p1, p2) {
   return R * c;
 }
 
+function calculateSilhouetteScore(vectors, labels, distanceFn) {
+  const n = vectors.length;
+  const clusterMap = new Map();
+
+  // Kelompokkan indeks titik per label
+  for (let i = 0; i < n; i++) {
+    const label = labels[i];
+    if (!clusterMap.has(label)) {
+      clusterMap.set(label, []);
+    }
+    clusterMap.get(label).push(i);
+  }
+
+  const silhouetteScores = new Array(n).fill(0);
+
+  for (let i = 0; i < n; i++) {
+    const ownCluster = labels[i];
+    const ownIndices = clusterMap.get(ownCluster).filter((idx) => idx !== i);
+
+    // a(i)
+    let a = 0;
+    if (ownIndices.length > 0) {
+      const aSum = ownIndices.reduce(
+        (sum, j) => sum + distanceFn(vectors[i], vectors[j]),
+        0
+      );
+      a = aSum / ownIndices.length;
+    }
+
+    // b(i)
+    let b = Infinity;
+    for (const [label, indices] of clusterMap.entries()) {
+      if (label === ownCluster) continue;
+      const bSum = indices.reduce(
+        (sum, j) => sum + distanceFn(vectors[i], vectors[j]),
+        0
+      );
+      const bAvg = bSum / indices.length;
+      if (bAvg < b) {
+        b = bAvg;
+      }
+    }
+
+    // silhouette score s(i)
+    const s = a === 0 && b === 0 ? 0 : (b - a) / Math.max(a, b);
+    silhouetteScores[i] = s;
+  }
+
+  // Rata-rata keseluruhan
+  const totalAvg = silhouetteScores.reduce((sum, s) => sum + s, 0) / n;
+
+  // Return: skor per titik dan map label → index
+  return { silhouetteScores, clusterMap, totalAvg };
+}
+
 // skmeans
 export const assignKurir = async (req, res) => {
   const { date } = req.body;
@@ -506,6 +565,13 @@ export const assignKurir = async (req, res) => {
     );
     // console.log(result);
 
+    // Hitung silhouette score
+    const { silhouetteScores, clusterMap, totalAvg } = calculateSilhouetteScore(
+      vectors,
+      result.idxs,
+      haversineDistance
+    );
+
     // Objek untuk melacak kurir yang ditugaskan ke setiap order_id
     const courierAssignments = {};
 
@@ -544,7 +610,20 @@ export const assignKurir = async (req, res) => {
           );
         }
       }
+
+      const clusterScore =
+        clusterIndices.reduce((sum, idx) => sum + silhouetteScores[idx], 0) /
+        clusterIndices.length;
+
+      console.log(
+        `Silhouette Score rata-rata untuk Cluster Courier #${courierId}: ${clusterScore.toFixed(
+          4
+        )}\n`
+      );
     }
+    console.log(
+      `Silhouette Score rata-rata keseluruhan: ${totalAvg.toFixed(4)}\n`
+    );
 
     // Setelah menugaskan kurir ke semua order_details, update courier_id di orders
     for (const orderId in courierAssignments) {
