@@ -510,8 +510,7 @@ function calculateSilhouetteScore(vectors, labels, distanceFn) {
   // Rata-rata keseluruhan
   const totalAvg = silhouetteScores.reduce((sum, s) => sum + s, 0) / n;
 
-  // Return: skor per titik dan map label → index
-  return { silhouetteScores, clusterMap, totalAvg };
+  return { silhouetteScores, totalAvg };
 }
 
 // skmeans
@@ -596,6 +595,11 @@ export const assignKurir = async (req, res) => {
           console.log(
             `Assigned Courier #${courierId} to OrderDetail ID: ${order_details[index].id}`
           );
+          console.log(
+            `Silhouette score OrderDetailID ${
+              order_details[index].id
+            }: ${silhouetteScores[index].toFixed(4)}\n`
+          );
 
           // Tambahkan courierId ke daftar yang akan diupdate di orders
           const orderId = order_details[index].order_id;
@@ -610,16 +614,6 @@ export const assignKurir = async (req, res) => {
           );
         }
       }
-
-      const clusterScore =
-        clusterIndices.reduce((sum, idx) => sum + silhouetteScores[idx], 0) /
-        clusterIndices.length;
-
-      console.log(
-        `Silhouette Score rata-rata untuk Cluster Courier #${courierId}: ${clusterScore.toFixed(
-          4
-        )}\n`
-      );
     }
     console.log(
       `Silhouette Score rata-rata keseluruhan: ${totalAvg.toFixed(4)}\n`
