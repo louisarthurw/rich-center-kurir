@@ -29,7 +29,7 @@ const Navbar = () => {
       confirmButtonText: "Ya, keluarkan aku!",
       cancelButtonText: "Batal",
       confirmButtonColor: "#059669",
-      cancelButtonColor: "#374151"
+      cancelButtonColor: "#374151",
     });
 
     if (result.isConfirmed) {
@@ -63,13 +63,15 @@ const Navbar = () => {
             Home
           </Link>
 
-          <Link
-            to="/services"
-            className="flex items-center text-gray-300 hover:text-emerald-400"
-          >
-            <Package className="mr-1" size={20} />
-            <span>Services</span>
-          </Link>
+          {!isAdmin && (
+            <Link
+              to="/services"
+              className="flex items-center text-gray-300 hover:text-emerald-400"
+            >
+              <Package className="mr-1" size={20} />
+              <span>Services</span>
+            </Link>
+          )}
 
           {user && (
             <>
@@ -80,13 +82,15 @@ const Navbar = () => {
                 <User2 className="mr-1" size={20} />
                 <span>Profile</span>
               </Link>
-              <Link
-                to="/orders"
-                className="flex items-center text-gray-300 hover:text-emerald-400"
-              >
-                <ClipboardList className="mr-1" size={20} />
-                <span>Orders</span>
-              </Link>
+              {!isAdmin && (
+                <Link
+                  to="/orders"
+                  className="flex items-center text-gray-300 hover:text-emerald-400"
+                >
+                  <ClipboardList className="mr-1" size={20} />
+                  <span>Orders</span>
+                </Link>
+              )}
             </>
           )}
 

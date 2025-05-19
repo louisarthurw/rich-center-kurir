@@ -54,6 +54,7 @@ export const getOrderById = async (req, res) => {
         od.delivery_name,
         od.delivery_address,
         od.delivery_phone_number,
+        od.delivery_notes,
         od.sender_name,
         od.lat,
         od.long,
@@ -215,13 +216,11 @@ export const createOrder = async (req, res) => {
     const orderDetailsQueries = deliveryDetails.map((detail) => {
       return sql`
         INSERT INTO order_details (
-          order_id, delivery_name, delivery_address, delivery_phone_number,
+          order_id, delivery_name, delivery_address, delivery_phone_number, delivery_notes, 
           sender_name, lat, long, cluster_centroid, courier_id, visit_order, proof_image, address_status
         ) VALUES (
-          ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${
-        detail.delivery_phone_number
-      },
-          ${detail.sender_name}, ${detail.delivery_lat}, ${
+          ${orderId}, ${detail.delivery_name}, ${detail.delivery_address}, ${detail.delivery_phone_number}, 
+          ${detail.delivery_notes},${detail.sender_name}, ${detail.delivery_lat}, ${
         detail.delivery_lng
       }, ${null}, ${assignedCourierId}, ${null}, ${null}, 'waiting'
         );

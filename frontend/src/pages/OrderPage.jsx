@@ -122,6 +122,7 @@ const OrderPage = ({ id }) => {
           delivery_name: "",
           delivery_address: "",
           delivery_phone_number: "",
+          delivery_notes: "",
           sender_name: "",
           delivery_lat: null,
           delivery_lng: null,
@@ -131,6 +132,7 @@ const OrderPage = ({ id }) => {
             delivery_name: "",
             delivery_address: "",
             delivery_phone_number: "",
+            delivery_notes: "",
             sender_name: "",
             delivery_lat: null,
             delivery_lng: null,
@@ -147,6 +149,7 @@ const OrderPage = ({ id }) => {
         delivery_name: "",
         delivery_address: "",
         delivery_phone_number: "",
+        delivery_notes: "",
         sender_name: "",
         delivery_lat: null,
         delivery_lng: null,
@@ -710,6 +713,33 @@ const OrderPage = ({ id }) => {
                             e.target.value
                           )
                         }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">
+                      Catatan Tambahan
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
+                        <NotepadText
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <textarea
+                        rows={5}
+                        value={detail.delivery_notes}
+                        onChange={(e) =>
+                          handleDeliveryDetailsChange(
+                            index,
+                            "delivery_notes",
+                            e.target.value
+                          )
+                        }
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        placeholder="Rumah pagar coklat / Rumah di sebelah pom bensin"
                       />
                     </div>
                   </div>

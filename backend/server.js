@@ -20,7 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 
 app.use(express.json({ limit: "10mb" }));
-app.use(helmet()); // helmet is a security middleware that helps you protect your app by setting various HTTP headers
+app.use(helmet({ contentSecurityPolicy: false })); // helmet is a security middleware that helps you protect your app by setting various HTTP headers
 app.use(morgan("dev")); // log the requests
 app.use(cors());
 app.use(cookieParser());
@@ -117,6 +117,7 @@ async function initDB() {
         delivery_name VARCHAR(255) NOT NULL,
         delivery_address VARCHAR(255) NOT NULL,
         delivery_phone_number VARCHAR(255) NOT NULL,
+        delivery_notes VARCHAR(255),
         sender_name VARCHAR(255),
         lat NUMERIC(11,7),
         long NUMERIC(11,7),

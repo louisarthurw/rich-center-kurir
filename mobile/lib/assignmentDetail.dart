@@ -367,6 +367,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                     'phone':
                         delivery['delivery_phone_number']?.toString() ?? '',
                     'address': delivery['delivery_address']?.toString() ?? '',
+                    'notes': delivery['delivery_notes']?.toString() ?? '',
                     'sender_name': delivery['sender_name']?.toString() ?? '',
                     'address_status': delivery['address_status']?.toString(),
                     'proof_image': delivery['proof_image']?.toString(),
@@ -531,14 +532,14 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
           if (data['type'] != 'initial') ...[
             _infoLine("Nama", data['name']?.toString() ?? '-'),
             _infoLine("Nomor Telepon", data['phone']?.toString() ?? '-'),
-            20.height,
-          ],
-          if (data['type'] == 'pickup') ...[
             _infoLine(
                 "Catatan",
                 data['notes']?.toString().isNotEmpty == true
                     ? data['notes']!.toString()
                     : "-"),
+            20.height,
+          ],
+          if (data['type'] == 'pickup') ...[
             _infoLine(
                 "Ambil paket di rumah orang lain",
                 data['take_on_behalf']?.toString().isNotEmpty == true
