@@ -218,7 +218,7 @@ const OrderPage = ({ id }) => {
       showCancelButton: true,
       confirmButtonText: "Ya, buat order!",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#059669",
+      confirmButtonColor: "#10baee",
       cancelButtonColor: "#374151",
     });
 
@@ -287,7 +287,7 @@ const OrderPage = ({ id }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-center text-3xl font-extrabold text-emerald-400">
+        <h2 className="text-center text-3xl font-extrabold text-[#10baee]">
           Form Order
         </h2>
       </motion.div>
@@ -301,19 +301,19 @@ const OrderPage = ({ id }) => {
         <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-emerald-300">
+              <h2 className="text-2xl font-semibold text-[#10baee]">
                 Detail Pengambilan Barang
               </h2>
 
               <div className="flex items-center justify-between">
-                <h2 className="block text-md font-medium text-gray-300">
+                <h2 className="block text-md font-medium text-slate-200">
                   Ambil Barang di Tempat Orang Lain
                 </h2>
                 <Switch
                   checked={takePackageOnBehalf}
                   onChange={handleTakePackageOnBehalfChange}
                   className={`${
-                    takePackageOnBehalf ? "bg-emerald-500" : "bg-gray-600"
+                    takePackageOnBehalf ? "bg-[#10baee]" : "bg-gray-600"
                   } relative inline-flex h-6 w-11 items-center rounded-full transition`}
                 >
                   <span
@@ -328,10 +328,10 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="date"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Tanggal
-                    <span className="text-emerald-300"> *</span>
+                    <span className="text-[#10baee]"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -348,7 +348,7 @@ const OrderPage = ({ id }) => {
                       required
                       value={pickupDetails.date}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                     />
                   </div>
                 </div>
@@ -356,10 +356,10 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="pickup_name"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Nama
-                    <span className="text-emerald-300"> *</span>
+                    <span className="text-[#10baee]"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -374,7 +374,7 @@ const OrderPage = ({ id }) => {
                       required
                       value={pickupDetails.pickup_name}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="John Doe"
                     />
                   </div>
@@ -383,10 +383,10 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="pickup_phone_number"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Nomor Telepon
-                    <span className="text-emerald-300"> *</span>
+                    <span className="text-[#10baee]"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -402,7 +402,7 @@ const OrderPage = ({ id }) => {
                       required
                       value={pickupDetails.pickup_phone_number}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="08123456789"
                     />
                   </div>
@@ -418,10 +418,10 @@ const OrderPage = ({ id }) => {
                   <div>
                     <label
                       htmlFor="pickup_address"
-                      className="block text-sm font-medium text-gray-300"
+                      className="block text-sm font-medium text-slate-200"
                     >
                       Alamat
-                      <span className="text-emerald-300"> *</span>
+                      <span className="text-[#10baee]"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -436,7 +436,7 @@ const OrderPage = ({ id }) => {
                         required
                         value={pickupDetails.pickup_address}
                         onChange={handlePickupDetailsChange}
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="Jalan A No. 1"
                       />
                     </div>
@@ -446,7 +446,7 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="pickup_notes"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Catatan Tambahan
                   </label>
@@ -462,7 +462,7 @@ const OrderPage = ({ id }) => {
                       rows={5}
                       value={pickupDetails.pickup_notes}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="Rumah pagar coklat / Rumah di sebelah pom bensin"
                     />
                   </div>
@@ -471,10 +471,10 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="type"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Jenis Barang
-                    <span className="text-emerald-300"> *</span>
+                    <span className="text-[#10baee]"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -489,7 +489,7 @@ const OrderPage = ({ id }) => {
                       required
                       value={pickupDetails.type}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="Dokumen / Makanan / Baju / dll"
                     />
                   </div>
@@ -498,10 +498,10 @@ const OrderPage = ({ id }) => {
                 <div>
                   <label
                     htmlFor="weight"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Perkiraan Berat (kg)
-                    <span className="text-emerald-300"> *</span>
+                    <span className="text-[#10baee]"> *</span>
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -518,7 +518,7 @@ const OrderPage = ({ id }) => {
                       required
                       value={pickupDetails.weight}
                       onChange={handlePickupDetailsChange}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="1,5"
                     />
                   </div>
@@ -528,10 +528,10 @@ const OrderPage = ({ id }) => {
                   <div>
                     <label
                       htmlFor="take_package_on_behalf_of"
-                      className="block text-sm font-medium text-gray-300"
+                      className="block text-sm font-medium text-slate-200"
                     >
                       Ambil Kiriman Atas Nama
-                      <span className="text-emerald-300"> *</span>
+                      <span className="text-[#10baee]"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -546,7 +546,7 @@ const OrderPage = ({ id }) => {
                         required
                         value={pickupDetails.take_package_on_behalf_of}
                         onChange={handlePickupDetailsChange}
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="John Doe"
                       />
                     </div>
@@ -556,19 +556,19 @@ const OrderPage = ({ id }) => {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-emerald-300">
+              <h2 className="text-2xl font-semibold text-[#10baee]">
                 Detail Pengiriman Barang
               </h2>
 
               <div className="flex items-center justify-between">
-                <h2 className="block text-md font-medium text-gray-300">
+                <h2 className="block text-md font-medium text-slate-200">
                   Dropship
                 </h2>
                 <Switch
                   checked={dropship}
                   onChange={handleDropshipChange}
                   className={`${
-                    dropship ? "bg-emerald-500" : "bg-gray-600"
+                    dropship ? "bg-[#10baee]" : "bg-gray-600"
                   } relative inline-flex h-6 w-11 items-center rounded-full transition`}
                 >
                   <span
@@ -584,14 +584,14 @@ const OrderPage = ({ id }) => {
                   key={index}
                   className="space-y-4 p-4 border border-gray-600 rounded-lg bg-gray-800"
                 >
-                  <h3 className="text-lg font-semibold text-gray-300">
+                  <h3 className="text-lg font-semibold text-slate-200">
                     Alamat {index + 1}
                   </h3>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Nama Penerima
-                      <span className="text-emerald-300"> *</span>
+                      <span className="text-[#10baee]"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -603,7 +603,7 @@ const OrderPage = ({ id }) => {
                       <input
                         type="text"
                         required
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="John Doe"
                         value={detail.delivery_name}
                         onChange={(e) =>
@@ -619,9 +619,9 @@ const OrderPage = ({ id }) => {
 
                   {dropship && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Nama Pengirim
-                        <span className="text-emerald-300"> *</span>
+                        <span className="text-[#10baee]"> *</span>
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -633,7 +633,7 @@ const OrderPage = ({ id }) => {
                         <input
                           type="text"
                           required
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="John Doe"
                           value={detail.sender_name}
                           onChange={(e) =>
@@ -658,9 +658,9 @@ const OrderPage = ({ id }) => {
                     // }}
                   >
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Alamat
-                        <span className="text-emerald-300"> *</span>
+                        <span className="text-[#10baee]"> *</span>
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -672,7 +672,7 @@ const OrderPage = ({ id }) => {
                         <input
                           type="text"
                           required
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="Jalan A No. 1"
                           value={detail.delivery_address}
                           onChange={(e) =>
@@ -688,9 +688,9 @@ const OrderPage = ({ id }) => {
                   </StandaloneSearchBox>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Nomor Telepon
-                      <span className="text-emerald-300"> *</span>
+                      <span className="text-[#10baee]"> *</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -703,7 +703,7 @@ const OrderPage = ({ id }) => {
                         type="tel"
                         pattern="[0-9]{10,12}"
                         required
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="08123456789"
                         value={detail.delivery_phone_number}
                         onChange={(e) =>
@@ -718,7 +718,7 @@ const OrderPage = ({ id }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Catatan Tambahan
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -738,7 +738,7 @@ const OrderPage = ({ id }) => {
                             e.target.value
                           )
                         }
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="Rumah pagar coklat / Rumah di sebelah pom bensin"
                       />
                     </div>
@@ -775,7 +775,7 @@ const OrderPage = ({ id }) => {
               <div className="flex justify-end">
                 <button
                   onClick={addAddress}
-                  className="flex items-center px-4 py-2 text-emerald-500 border border-emerald-500 rounded-md hover:bg-emerald-500 hover:text-white transition"
+                  className="flex items-center px-4 py-2 text-[#10baee] border border-[#10baee] rounded-md hover:bg-[#10baee] hover:text-white transition"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Tambah Alamat
@@ -787,14 +787,14 @@ const OrderPage = ({ id }) => {
               <button
                 type="button"
                 onClick={() => navigate("/services")}
-                className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+                className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-slate-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
               >
                 Back
               </button>
 
               <button
                 type="submit"
-                className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
+                className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] transition duration-150 ease-in-out disabled:opacity-50"
                 disabled={loading}
               >
                 {loading ? (
@@ -810,14 +810,6 @@ const OrderPage = ({ id }) => {
                 )}
               </button>
             </div>
-
-            {/* <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
-              disabled={loading}
-            >
-              Place Order
-            </button> */}
           </form>
         </div>
       </motion.div>

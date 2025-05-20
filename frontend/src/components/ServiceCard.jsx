@@ -31,12 +31,12 @@ const ServiceCard = ({ service }) => {
                 onMouseLeave={() => setShowPopup(false)}
               >
                 <Info
-                  className="cursor-pointer hover:text-emerald-400"
+                  className="cursor-pointer hover:text-[#10baee]"
                   size={20}
                 />
 
                 {showPopup && (
-                  <div className="absolute right-0 bottom-16 w-72 bg-gray-800 text-white text-sm p-3 rounded-md shadow-lg z-30">
+                  <div className="absolute right-0 bottom-16 w-72 bg-[#10abee] text-white text-sm p-3 rounded-md shadow-lg z-30">
                     {service.description}
                   </div>
                 )}

@@ -19,10 +19,10 @@ const ServicesPage = () => {
     <div className="relative min-h-[calc(100vh-64px)] text-white overflow-hidden">
       <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-16 py-8 space-y-10">
         <div className="space-y-4">
-          <h1 className="text-center text-5xl sm:text-6xl font-bold text-emerald-400 mb-4">
+          <h1 className="text-center text-5xl sm:text-6xl font-bold text-[#10baee] mb-4">
             Explore Our Services
           </h1>
-          <p className="text-center text-xl text-gray-300 mb-4">
+          <p className="text-center text-xl text-gray-700 mb-4">
             Pick the right service for you
           </p>
         </div>

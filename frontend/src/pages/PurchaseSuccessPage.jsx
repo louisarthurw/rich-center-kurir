@@ -7,17 +7,17 @@ const PurchaseSuccessPage = () => {
       <div className="max-w-md w-full bg-gray-800 rounded-lg shadow-xl overflow-hidden relative z-10">
         <div className="p-6 sm:p-8">
           <div className="flex justify-center space-y-4">
-            <CheckCircle className="text-emerald-400 w-16 h-16 mb-4" />
+            <CheckCircle className="text-[#10baee] w-16 h-16 mb-4" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-emerald-400 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-[#10baee] mb-2">
             Purchase Successful!
           </h1>
 
-          <p className="text-gray-300 text-center">
+          <p className="text-slate-200 text-center">
             Thank you for your order. {"We're"} processing it now.
           </p>
 
-          <div className="w-full text-gray-300 font-bold py-2 px-4 rounded-lg flex items-center justify-center mb-8">
+          <div className="w-full text-slate-200 font-bold py-2 px-4 rounded-lg flex items-center justify-center mb-8">
             <HandHeart className="mr-2" size={18} />
             Thanks for trusting us!
           </div>

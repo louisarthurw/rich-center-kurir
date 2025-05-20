@@ -27,8 +27,8 @@ const OrderHistoryList = ({ activeTab }) => {
           <Package className="size-12 text-gray-300" />
         </div>
         <div className="text-center space-y-2">
-          <h3 className="text-2xl font-semibold text-white">No orders found</h3>
-          <p className="text-gray-400 max-w-sm">
+          <h3 className="text-2xl font-semibold text-[#10baee]">No orders found</h3>
+          <p className="text-gray-700 max-w-sm">
             Get started by ordering your first service!
           </p>
         </div>

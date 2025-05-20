@@ -11,7 +11,7 @@ const ServicesList = ({ onAddService, onEditService }) => {
   }, [getAllServices]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <div className="text-black">Loading...</div>;
   }
 
   return (
@@ -23,7 +23,7 @@ const ServicesList = ({ onAddService, onEditService }) => {
     >
       <div className="flex justify-end">
         <button
-          className="flex items-center px-4 py-2 rounded-md bg-emerald-600 text-white"
+          className="flex items-center px-4 py-2 rounded-md bg-[#10baee] text-white"
           onClick={onAddService}
         >
           <PlusCircle className="mr-2 h-5 w-5" />

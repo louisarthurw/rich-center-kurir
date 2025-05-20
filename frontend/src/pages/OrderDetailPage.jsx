@@ -79,7 +79,7 @@ const OrderDetailPage = () => {
       showCancelButton: true,
       confirmButtonText: "Ya, benar!",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#059669",
+      confirmButtonColor: "#10baee",
       cancelButtonColor: "#374151",
     });
 
@@ -110,7 +110,7 @@ const OrderDetailPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-center text-3xl font-extrabold text-emerald-400">
+        <h2 className="text-center text-3xl font-extrabold text-[#10baee]">
           Detail Order
         </h2>
       </motion.div>
@@ -124,7 +124,7 @@ const OrderDetailPage = () => {
         <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-emerald-300">
+              <h2 className="text-2xl font-semibold text-[#10baee]">
                 Detail Service
               </h2>
 
@@ -139,9 +139,9 @@ const OrderDetailPage = () => {
                   <h2 className="text-lg font-semibold text-white">
                     {pickup_details.service_name}
                   </h2>
-                  <p className="text-gray-300">
+                  <p className="text-slate-200">
                     Harga per Alamat:{" "}
-                    <span className="font-medium text-gray-300">
+                    <span className="font-medium text-slate-200">
                       Rp
                       {new Intl.NumberFormat("id-ID").format(
                         pickup_details.service_price
@@ -149,15 +149,15 @@ const OrderDetailPage = () => {
                       ,00
                     </span>
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-slate-200">
                     Jumlah Alamat:{" "}
                     <span className="font-medium">
                       {pickup_details.total_address}
                     </span>
                   </p>
-                  <p className="text-gray-300">
+                  <p className="text-slate-200">
                     Total:{" "}
-                    <span className="font-medium text-emerald-400">
+                    <span className="font-medium text-[#10baee]">
                       Rp
                       {new Intl.NumberFormat("id-ID").format(
                         pickup_details.subtotal
@@ -170,18 +170,18 @@ const OrderDetailPage = () => {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-emerald-300">
+              <h2 className="text-2xl font-semibold text-[#10baee]">
                 Detail Pengambilan Barang
               </h2>
 
               <div className="flex items-center justify-between">
-                <h2 className="block text-md font-medium text-gray-300">
+                <h2 className="block text-md font-medium text-slate-200">
                   Ambil Barang di Tempat Orang Lain
                 </h2>
                 <Switch
                   checked={takePackageOnBehalf}
                   className={`${
-                    takePackageOnBehalf ? "bg-emerald-500" : "bg-gray-600"
+                    takePackageOnBehalf ? "bg-[#10baee]" : "bg-gray-600"
                   } relative inline-flex h-6 w-11 items-center rounded-full transition`}
                 >
                   <span
@@ -196,7 +196,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="date"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Tanggal
                   </label>
@@ -219,7 +219,7 @@ const OrderDetailPage = () => {
                               .split("T")[0]
                           : ""
                       }
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                     />
                   </div>
                 </div>
@@ -227,7 +227,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="pickup_name"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Nama
                   </label>
@@ -244,7 +244,7 @@ const OrderDetailPage = () => {
                       required
                       readOnly
                       value={pickup_details.pickup_name}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="John Doe"
                     />
                   </div>
@@ -253,7 +253,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="pickup_phone_number"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Nomor Telepon
                   </label>
@@ -271,7 +271,7 @@ const OrderDetailPage = () => {
                       required
                       readOnly
                       value={pickup_details.pickup_phone_number}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="08123456789"
                     />
                   </div>
@@ -280,7 +280,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="pickup_address"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Alamat
                   </label>
@@ -297,7 +297,7 @@ const OrderDetailPage = () => {
                       required
                       readOnly
                       value={pickup_details.pickup_address}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="Jalan A No. 1"
                     />
                   </div>
@@ -307,7 +307,7 @@ const OrderDetailPage = () => {
                   pickup_details.long &&
                   user.role === "admin" && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Titik Koordinat
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -321,7 +321,7 @@ const OrderDetailPage = () => {
                           type="text"
                           required
                           readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="Jalan A No. 1"
                           value={`${pickup_details.lat}, ${pickup_details.long}`}
                         />
@@ -332,7 +332,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="pickup_notes"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Catatan Tambahan
                   </label>
@@ -348,7 +348,7 @@ const OrderDetailPage = () => {
                       rows={5}
                       value={pickup_details.pickup_notes}
                       readOnly
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                     />
                   </div>
                 </div>
@@ -356,7 +356,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="type"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Jenis Barang
                   </label>
@@ -373,7 +373,7 @@ const OrderDetailPage = () => {
                       required
                       readOnly
                       value={pickup_details.type}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="Dokumen / Makanan / Baju / dll"
                     />
                   </div>
@@ -382,7 +382,7 @@ const OrderDetailPage = () => {
                 <div>
                   <label
                     htmlFor="weight"
-                    className="block text-sm font-medium text-gray-300"
+                    className="block text-sm font-medium text-slate-200"
                   >
                     Perkiraan Berat (kg)
                   </label>
@@ -401,7 +401,7 @@ const OrderDetailPage = () => {
                       required
                       readOnly
                       value={pickup_details.weight}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       placeholder="1,5"
                     />
                   </div>
@@ -411,7 +411,7 @@ const OrderDetailPage = () => {
                   <div>
                     <label
                       htmlFor="take_package_on_behalf_of"
-                      className="block text-sm font-medium text-gray-300"
+                      className="block text-sm font-medium text-slate-200"
                     >
                       Ambil Kiriman Atas Nama
                     </label>
@@ -428,7 +428,7 @@ const OrderDetailPage = () => {
                         required
                         readOnly
                         value={pickup_details.take_package_on_behalf_of}
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="John Doe"
                       />
                     </div>
@@ -438,18 +438,18 @@ const OrderDetailPage = () => {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-emerald-300">
+              <h2 className="text-2xl font-semibold text-[#10baee]">
                 Detail Pengiriman Barang
               </h2>
 
               <div className="flex items-center justify-between">
-                <h2 className="block text-md font-medium text-gray-300">
+                <h2 className="block text-md font-medium text-slate-200">
                   Dropship
                 </h2>
                 <Switch
                   checked={dropship}
                   className={`${
-                    dropship ? "bg-emerald-500" : "bg-gray-600"
+                    dropship ? "bg-[#10baee]" : "bg-gray-600"
                   } relative inline-flex h-6 w-11 items-center rounded-full transition`}
                 >
                   <span
@@ -466,7 +466,7 @@ const OrderDetailPage = () => {
                   className="space-y-4 p-4 border border-gray-600 rounded-lg bg-gray-800"
                 >
                   <div className="flex justify-between items-center rounded-lg ">
-                    <h3 className="text-lg font-semibold text-gray-300">
+                    <h3 className="text-lg font-semibold text-slate-200">
                       Alamat {index + 1}
                     </h3>
 
@@ -496,7 +496,7 @@ const OrderDetailPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Nama Penerima
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -510,7 +510,7 @@ const OrderDetailPage = () => {
                         type="text"
                         required
                         readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="John Doe"
                         value={detail.delivery_name}
                       />
@@ -519,7 +519,7 @@ const OrderDetailPage = () => {
 
                   {dropship && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Nama Pengirim
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -533,7 +533,7 @@ const OrderDetailPage = () => {
                           type="text"
                           required
                           readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="John Doe"
                           value={detail.sender_name}
                         />
@@ -542,7 +542,7 @@ const OrderDetailPage = () => {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Alamat
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -556,7 +556,7 @@ const OrderDetailPage = () => {
                         type="text"
                         required
                         readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="Jalan A No. 1"
                         value={detail.delivery_address}
                       />
@@ -565,7 +565,7 @@ const OrderDetailPage = () => {
 
                   {detail.lat && detail.long && user.role === "admin" && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Titik Koordinat
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -579,7 +579,7 @@ const OrderDetailPage = () => {
                           type="text"
                           required
                           readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="Jalan A No. 1"
                           value={`${detail.lat}, ${detail.long}`}
                         />
@@ -588,7 +588,7 @@ const OrderDetailPage = () => {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Nomor Telepon
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -603,7 +603,7 @@ const OrderDetailPage = () => {
                         pattern="[0-9]{10,12}"
                         required
                         readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                         placeholder="08123456789"
                         value={detail.delivery_phone_number}
                       />
@@ -611,7 +611,7 @@ const OrderDetailPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300">
+                    <label className="block text-sm font-medium text-slate-200">
                       Catatan Tambahan
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -625,14 +625,14 @@ const OrderDetailPage = () => {
                         rows={5}
                         value={detail.delivery_notes}
                         readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                       />
                     </div>
                   </div>
 
                   {detail.courier_id && user.role === "customer" && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Nama Kurir
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -646,7 +646,7 @@ const OrderDetailPage = () => {
                           type="text"
                           required
                           readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           placeholder="John Doe"
                           value={detail.courier_name}
                         />
@@ -660,7 +660,7 @@ const OrderDetailPage = () => {
                       pickup_details.service_id === 4) &&
                     detail.courier_name && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-300">
+                        <label className="block text-sm font-medium text-slate-200">
                           Nama Kurir
                         </label>
                         <div className="mt-1 relative rounded-md shadow-sm">
@@ -674,7 +674,7 @@ const OrderDetailPage = () => {
                             type="text"
                             required
                             readOnly
-                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                             placeholder="John Doe"
                             value={detail.courier_name}
                           />
@@ -684,7 +684,7 @@ const OrderDetailPage = () => {
 
                   {user.role === "admin" && pickup_details.service_id === 1 && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Nama Kurir
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -695,7 +695,7 @@ const OrderDetailPage = () => {
                           />
                         </div>
                         <select
-                          className="block w-full px-3 py-2 pl-10 pr-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                          className="block w-full px-3 py-2 pl-10 pr-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                           value={detail.courier_id || ""}
                           onChange={(e) =>
                             handleCourierChange(index, Number(e.target.value))
@@ -714,7 +714,7 @@ const OrderDetailPage = () => {
 
                   {detail.proof_image && (
                     <div className="relative">
-                      <label className="block text-sm font-medium text-gray-300">
+                      <label className="block text-sm font-medium text-slate-200">
                         Bukti Foto
                       </label>
                       <div className="mt-1 relative rounded-md shadow-sm">
@@ -750,7 +750,7 @@ const OrderDetailPage = () => {
                   user.role === "admin" && pickup_details.service_id === 1
                     ? "w-1/2"
                     : "w-full"
-                } flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out`}
+                } flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-slate-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out`}
               >
                 Back
               </button>
@@ -758,7 +758,7 @@ const OrderDetailPage = () => {
               {user.role === "admin" && pickup_details.service_id === 1 && (
                 <button
                   type="submit"
-                  className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
+                  className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc]focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] transition duration-150 ease-in-out disabled:opacity-50"
                   disabled={loading}
                 >
                   {loading ? (

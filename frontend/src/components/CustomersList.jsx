@@ -13,7 +13,7 @@ const CustomersList = ({ onEditCustomer }) => {
   console.log(customers);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <div className="text-black">Loading...</div>;
   }
 
   return (

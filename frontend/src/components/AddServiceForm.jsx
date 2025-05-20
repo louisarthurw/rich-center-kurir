@@ -36,7 +36,7 @@ const AddServiceForm = ({ onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 text-emerald-300">
+      <h2 className="text-2xl font-semibold mb-6 text-[#10baee]">
         Add New Service
       </h2>
 
@@ -58,7 +58,7 @@ const AddServiceForm = ({ onClose }) => {
             }
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2
               px-3 text-white focus:outline-none focus:ring-2
-              focus:ring-emerald-500 focus:border-emerald-500"
+              focus:ring-[#10baee] focus:border-[#10baee]"
             required
           />
         </div>
@@ -79,8 +79,8 @@ const AddServiceForm = ({ onClose }) => {
             }
             rows="3"
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 
-					focus:border-emerald-500"
+						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] 
+					focus:border-[#10baee]"
             required
           />
         </div>
@@ -103,8 +103,8 @@ const AddServiceForm = ({ onClose }) => {
             step="1"
             min={0}
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm 
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500
-					focus:border-emerald-500"
+						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee]
+					focus:border-[#10baee]"
             required
           />
         </div>
@@ -125,8 +125,8 @@ const AddServiceForm = ({ onClose }) => {
             }
             rows="3"
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 
-					focus:border-emerald-500"
+						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] 
+					focus:border-[#10baee]"
             required
           />
         </div>
@@ -134,7 +134,7 @@ const AddServiceForm = ({ onClose }) => {
         <div className="flex mt-4 space-x-4">
           <button
             type="button"
-            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600"
             onClick={onClose}
           >
             <XCircle className="mr-2 h-5 w-5" />
@@ -143,7 +143,7 @@ const AddServiceForm = ({ onClose }) => {
 
           <button
             type="submit"
-            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] disabled:opacity-50"
             disabled={loading}
           >
             {loading ? (

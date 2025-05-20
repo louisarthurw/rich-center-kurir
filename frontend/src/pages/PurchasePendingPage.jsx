@@ -13,7 +13,7 @@ const PurchasePendingPage = () => {
             Purchase Pending
           </h1>
 
-          <div className="w-full text-gray-300 font-bold py-2 px-4 rounded-lg flex items-center justify-center mb-8">
+          <div className="w-full text-slate-200 font-bold py-2 px-4 rounded-lg flex items-center justify-center mb-8">
             <Clock className="mr-2" size={18} />
             Waiting for payment confirmation...
           </div>

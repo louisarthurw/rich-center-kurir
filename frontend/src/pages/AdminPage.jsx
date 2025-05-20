@@ -70,7 +70,7 @@ const AdminPage = () => {
     <div className="min-h-[calc(100vh-64px)] text-white relative overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 py-6">
         <motion.h1
-          className="text-4xl font-bold mb-8 text-emerald-400 text-center"
+          className="text-4xl font-bold mb-8 text-[#10baee] text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -85,8 +85,8 @@ const AdminPage = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center px-4 py-2 mx-2 rounded-md transition-colors duration-200 ${
                 activeTab === tab.id
-                  ? "bg-emerald-600 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  ? "bg-[#10baee] text-white"
+                  : "bg-gray-700 text-slate-200 hover:bg-gray-600"
               }`}
             >
               <tab.icon className="mr-2 h-5 w-5" />

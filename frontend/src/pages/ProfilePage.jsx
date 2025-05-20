@@ -42,7 +42,7 @@ const ProfilePage = ({ id }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 text-emerald-300">
+        <h2 className="text-2xl font-semibold mb-6 text-[#10baee]">
           Profile
         </h2>
 
@@ -56,7 +56,7 @@ const ProfilePage = ({ id }) => {
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-300"
+              className="block text-sm font-medium text-slate-200"
             >
               Name
             </label>
@@ -69,7 +69,7 @@ const ProfilePage = ({ id }) => {
                 setFormData({ ...formData, name: e.target.value })
               }
               disabled={!isEditing}
-              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] focus:border-[#10baee] ${
                 isEditing ? "" : "cursor-not-allowed"
               }`}
               required
@@ -79,7 +79,7 @@ const ProfilePage = ({ id }) => {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-300"
+              className="block text-sm font-medium text-slate-200"
             >
               Email
             </label>
@@ -92,7 +92,7 @@ const ProfilePage = ({ id }) => {
                 setFormData({ ...formData, email: e.target.value })
               }
               disabled
-              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] focus:border-[#10baee] ${
                 isEditing ? "" : "cursor-not-allowed"
               }`}
               required
@@ -102,7 +102,7 @@ const ProfilePage = ({ id }) => {
           <div>
             <label
               htmlFor="phone_number"
-              className="block text-sm font-medium text-gray-300"
+              className="block text-sm font-medium text-slate-200"
             >
               Phone Number
             </label>
@@ -115,7 +115,7 @@ const ProfilePage = ({ id }) => {
                 setFormData({ ...formData, phone_number: e.target.value })
               }
               disabled={!isEditing}
-              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+              className={`mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] focus:border-[#10baee] ${
                 isEditing ? "" : "cursor-not-allowed"
               }`}
               required
@@ -125,7 +125,7 @@ const ProfilePage = ({ id }) => {
           <div className="flex mt-4 space-x-4">
             <button
               type="button"
-              className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+              className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] disabled:opacity-50"
               onClick={() => navigate(`/profile/change-password`)}
             >
               <Lock className="mr-2 h-5 w-5" />
@@ -136,7 +136,7 @@ const ProfilePage = ({ id }) => {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee]"
               >
                 <Pencil className="mr-2 h-5 w-5" />
                 Edit
@@ -146,7 +146,7 @@ const ProfilePage = ({ id }) => {
             {isEditing && (
               <button
                 type="submit"
-                className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] disabled:opacity-50"
                 disabled={loading}
               >
                 {loading ? (

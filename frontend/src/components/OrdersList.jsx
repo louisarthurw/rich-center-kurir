@@ -37,7 +37,7 @@ const OrdersList = () => {
       showCancelButton: true,
       confirmButtonText: "Ya, benar!",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#059669",
+      confirmButtonColor: "#10baee",
       cancelButtonColor: "#374151",
     });
 
@@ -47,7 +47,7 @@ const OrdersList = () => {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <div className="text-black">Loading...</div>;
   }
 
   if (orders.length === 0) {
@@ -57,7 +57,7 @@ const OrdersList = () => {
           <Package className="size-12 text-gray-300" />
         </div>
         <div className="text-center">
-          <h3 className="text-2xl font-semibold text-white">No orders found</h3>
+          <h3 className="text-2xl font-semibold text-gray-700">No orders found</h3>
         </div>
       </div>
     );
@@ -83,14 +83,14 @@ const OrdersList = () => {
           transition={{ duration: 0.8 }}
         >
           <div className="flex justify-between items-center px-1 py-3">
-            <div className="text-emerald-400 text-lg font-semibold">
+            <div className="text-gray-700 text-lg font-semibold">
               {date} ({ordersForDate.length}{" "}
               {ordersForDate.length === 1 ? "order" : "orders"})
             </div>
 
             {formatDate(todayJakarta) === date ? (
               <button
-                className="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg"
+                className="bg-[#10baee] hover:bg-[#0aa2cc] text-white font-semibold py-2 px-4 rounded-lg"
                 onClick={handleAssignKurir}
               >
                 Assign Kurir
@@ -100,7 +100,7 @@ const OrdersList = () => {
             )}
           </div>
 
-          <div className="rounded-lg overflow-hidden">
+          <div className="rounded-lg overflow-x-auto w-full">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700">
                 <tr>
