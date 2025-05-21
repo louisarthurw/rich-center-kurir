@@ -225,9 +225,7 @@ export const logout = async (req, res) => {
 };
 
 export const loginKurir = async (req, res) => {
-  const { email, password } = req.body;
-
-  // console.log(email, password);
+  const { email, password, fcm_token } = req.body;
 
   if (!email || !password) {
     return res
@@ -262,19 +260,39 @@ export const loginKurir = async (req, res) => {
     }
 
     const { loginToken, expiresAt } = generateLoginToken(courier[0].id);
-    // console.log("token:", loginToken);
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: courier[0],
-        token: loginToken,
-        expiresAt: expiresAt,
-      });
+    // simpan fcm token di db, untuk notifikasi
+    await sql`
+      INSERT INTO notifications (courier_id, fcm_token)
+      VALUES (${courier[0].id}, ${fcm_token})
+    `;
+
+    res.status(200).json({
+      success: true,
+      data: courier[0],
+      token: loginToken,
+      expiresAt: expiresAt,
+    });
   } catch (error) {
     console.log("Error in loginKurir controller", error);
     res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+export const deleteFCMToken = async (req, res) => {
+  const { courier_id, fcm_token } = req.body;
+  console.log(courier_id, fcm_token);
+
+  try {
+    await sql`
+      DELETE FROM notifications
+      WHERE courier_id = ${courier_id} AND fcm_token = ${fcm_token}
+    `;
+
+    res.status(200).json({ success: true, message: "Berhasil logout" });
+  } catch (error) {
+    console.log("Error in deleteFCMToken controller", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

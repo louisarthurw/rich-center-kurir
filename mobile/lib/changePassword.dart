@@ -45,6 +45,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         if (response['success'] == true) {
           toast(response['message']);
 
+          final courierString = sp.getString('courier');
+          if (courierString == null) return;
+          final courier = jsonDecode(courierString);
+          int courierId = courier['id'];
+
+          await AuthServices()
+              .deleteFCMToken(courierId, sp.getString('fcm_token')!);
+
           await AuthServices.clearSession();
           if (mounted) {
             Navigator.pushAndRemoveUntil(

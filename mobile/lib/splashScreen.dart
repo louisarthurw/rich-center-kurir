@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/components/navbar.dart';
 import 'package:mobile/login.dart';
+import 'package:mobile/main.dart';
 import 'package:mobile/services/api/authServices.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -42,12 +44,29 @@ class _SplashScreenPageState extends ConsumerState<SplashScreenPage> {
 
       // hapus session jika token expired
       if (!isValid) {
+        final courierString = sp.getString('courier');
+        if (courierString != null) {
+          final courier = jsonDecode(courierString);
+          int courierId = courier['id'];
+
+          await AuthServices()
+              .deleteFCMToken(courierId, sp.getString('fcm_token')!);
+        }
         await AuthServices.clearSession();
       }
 
       return isValid;
     } catch (e) {
       debugPrint('Auth check error: $e');
+      final courierString = sp.getString('courier');
+      if (courierString != null) {
+        final courier = jsonDecode(courierString);
+        int courierId = courier['id'];
+
+        await AuthServices()
+            .deleteFCMToken(courierId, sp.getString('fcm_token')!);
+      }
+
       await AuthServices.clearSession();
       return false;
     }

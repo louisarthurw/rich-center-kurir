@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "111847142384",
+    "project_id": "rich-center-kurir",
+    "storage_bucket": "rich-center-kurir.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111847142384:android:c941a54e09f8b3d8f7a335",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7bSu_sfaQ-iwEw9vq5j5Dgz0Tq-Vrh0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

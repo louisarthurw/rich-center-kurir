@@ -1,16 +1,23 @@
 import 'dart:convert';
 import 'package:mobile/main.dart';
+import 'package:mobile/services/firebase/firebaseMessage.dart';
 import '../constResources.dart';
 import 'package:http/http.dart' as http;
 
 class AuthServices {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      await FirebaseMsg().initFCM();
+      
       final endpoint = Uri.parse("${url}/api/auth/login-kurir");
       final response = await http.post(
         endpoint,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+          "fcm_token": sp.getString('fcm_token'),
+        }),
       );
 
       final data = jsonDecode(response.body);
@@ -20,6 +27,24 @@ class AuthServices {
         await sp.setInt("token_expires_at", data["expiresAt"]);
         await sp.setString("courier", jsonEncode(data["data"]));
       }
+
+      return data;
+    } catch (e) {
+      throw Exception('${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteFCMToken(
+      int courier_id, String fcm_token) async {
+    try {
+      final endpoint = Uri.parse("${url}/api/auth/logout-kurir");
+      final response = await http.post(
+        endpoint,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"courier_id": courier_id, "fcm_token": fcm_token}),
+      );
+
+      final data = jsonDecode(response.body);
 
       return data;
     } catch (e) {
@@ -130,5 +155,6 @@ class AuthServices {
     await sp.remove("token");
     await sp.remove("token_expires_at");
     await sp.remove("courier");
+    await sp.remove("fcm_token");
   }
 }

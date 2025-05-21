@@ -54,6 +54,14 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   Future<void> _checkTokenExpiry() async {
     final isValid = await AuthServices.isTokenValid();
     if (!isValid && mounted) {
+      final courierString = sp.getString('courier');
+      if (courierString == null) return;
+      final courier = jsonDecode(courierString);
+      int courierId = courier['id'];
+
+      await AuthServices()
+          .deleteFCMToken(courierId, sp.getString('fcm_token')!);
+
       await AuthServices.clearSession();
       Navigator.pushReplacement(
         context,

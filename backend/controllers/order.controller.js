@@ -2,6 +2,7 @@ import { sql } from "../config/db.js";
 import dotenv from "dotenv";
 import crypto from "crypto";
 import skmeans from "skmeans";
+import { sendFcmNotification } from "../config/fcm.js";
 
 dotenv.config();
 
@@ -379,6 +380,35 @@ export const handleMidtransWebhook = async (req, res) => {
       `;
     }
 
+    // Kirim notifikasi
+    if (paymentStatus === "paid") {
+      const { service_id, courier_id } = order[0];
+
+      if (service_id === 2 || service_id === 4) {
+        if (courier_id) {
+          const courierIds = courier_id
+            .split(",")
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+
+          const notifications = await sql`
+            SELECT courier_id, fcm_token FROM notifications
+            WHERE courier_id = ANY(${courierIds})
+          `;
+
+          for (const notif of notifications) {
+            if (notif.fcm_token) {
+              await sendFcmNotification(
+                notif.fcm_token,
+                "Ada order masuk",
+                "Anda mendapatkan tugas baru!"
+              );
+            }
+          }
+        }
+      }
+    }
+
     res.status(200).json({ success: true, message: "Payment status updated" });
   } catch (error) {
     console.error("Error in Midtrans webhook:", error);
@@ -684,6 +714,43 @@ export const assignKurir = async (req, res) => {
         console.log(
           `Updated courier_id for Order ID: ${orderId} with courier: ${courierId}`
         );
+      }
+    }
+
+    // Kirim notifikasi ke semua device dari kurir yang diassign
+    const allAssignedCourierIds = new Set();
+
+    for (const courierSet of Object.values(courierAssignments)) {
+      courierSet.forEach((id) => allAssignedCourierIds.add(id));
+    }
+
+    const courierIdList = Array.from(allAssignedCourierIds);
+
+    if (courierIdList.length > 0) {
+      // Ambil semua fcm_token berdasarkan courier_id yang diassign
+      const tokensResult = await sql`
+          SELECT courier_id, fcm_token
+          FROM notifications
+          WHERE courier_id = ANY(${courierIdList})
+        `;
+
+      for (const { courier_id, fcm_token } of tokensResult) {
+        try {
+          await sendFcmNotification(
+            fcm_token,
+            "Ada order masuk",
+            "Anda mendapatkan tugas baru!"
+          );
+
+          console.log(
+            `Notifikasi berhasil dikirim ke Courier ID ${courier_id}`
+          );
+        } catch (err) {
+          console.error(
+            `Gagal kirim notifikasi ke Courier ID ${courier_id}`,
+            err
+          );
+        }
       }
     }
 

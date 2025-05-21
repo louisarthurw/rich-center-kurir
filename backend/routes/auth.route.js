@@ -6,7 +6,8 @@ import {
   signup,
   verifyEmail,
   refreshToken,
-  loginKurir
+  loginKurir,
+  deleteFCMToken
 } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
@@ -18,6 +19,7 @@ router.post("/login", login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 router.post("/login-kurir", loginKurir)
+router.post("/logout-kurir", deleteFCMToken);
 router.get("/profile", protectRoute, getProfile);
 
 
