@@ -46,41 +46,78 @@ export const generateRoute = async (req, res) => {
       }
     });
 
-    // console.log("coordinates:", coordinates);
+    console.log("coordinates:", coordinates);
 
     const locations = coordinates.map((c) => `${c.lat},${c.long}`);
-    const origins = locations.join("|");
-    const destinations = locations.join("|");
 
-    const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/distancematrix/json",
-      {
-        params: {
-          origins,
-          destinations,
-          key: process.env.GOOGLE_MAPS_API_KEY,
-          mode: "driving",
-          departure_time: "now",
-        },
-      }
+    const BATCH_LIMIT = 10;
+    const total = locations.length;
+    const timeMatrix = Array.from({ length: total }, () =>
+      Array(total).fill(Infinity)
     );
 
-    // console.log("response:", response);
+    if (total <= BATCH_LIMIT) {
+      // Kirim satu permintaan langsung jika jumlah alamat <= 10
+      const all = locations.join("|");
 
-    const dataMatrix = response.data;
-
-    const timeMatrix = [];
-
-    dataMatrix.rows.forEach((row) => {
-      const rowDurations = row.elements.map((el) => {
-        if (el.status === "OK") {
-          return el.duration.value;
-        } else {
-          return Infinity;
+      const response = await axios.get(
+        "https://maps.googleapis.com/maps/api/distancematrix/json",
+        {
+          params: {
+            origins: all,
+            destinations: all,
+            key: process.env.GOOGLE_MAPS_API_KEY,
+            mode: "driving",
+            departure_time: "now",
+          },
         }
+      );
+
+      response.data.rows.forEach((row, i) => {
+        row.elements.forEach((el, j) => {
+          if (el.status === "OK") {
+            timeMatrix[i][j] = el.duration.value;
+          }
+        });
       });
-      timeMatrix.push(rowDurations);
-    });
+    } else {
+      // Kirim batch jika jumlah alamat > 10
+      const fillMatrix = async () => {
+        for (let i = 0; i < total; i += BATCH_LIMIT) {
+          for (let j = 0; j < total; j += BATCH_LIMIT) {
+            const originBatch = locations.slice(i, i + BATCH_LIMIT).join("|");
+            const destinationBatch = locations
+              .slice(j, j + BATCH_LIMIT)
+              .join("|");
+
+            const response = await axios.get(
+              "https://maps.googleapis.com/maps/api/distancematrix/json",
+              {
+                params: {
+                  origins: originBatch,
+                  destinations: destinationBatch,
+                  key: process.env.GOOGLE_MAPS_API_KEY,
+                  mode: "driving",
+                  departure_time: "now",
+                },
+              }
+            );
+
+            const rows = response.data.rows;
+
+            rows.forEach((row, rowIndex) => {
+              row.elements.forEach((el, colIndex) => {
+                if (el.status === "OK") {
+                  timeMatrix[i + rowIndex][j + colIndex] = el.duration.value;
+                }
+              });
+            });
+          }
+        }
+      };
+
+      await fillMatrix();
+    }
 
     console.log("time matrix:", timeMatrix);
 
@@ -121,7 +158,7 @@ export const generateRoute = async (req, res) => {
         const result = await sql`
           SELECT courier_id, visit_order FROM orders WHERE id = ${orderId}
         `;
-        console.log('resss:', result)
+        console.log("resss:", result);
 
         const courierStr = result[0]?.courier_id;
         const visitStr = result[0]?.visit_order;

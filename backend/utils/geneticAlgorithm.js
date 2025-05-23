@@ -10,8 +10,6 @@ export function runGA(timeMatrix, coordinates) {
     (i) => i !== initialIndex
   );
 
-  console.log(routeIndices);
-
   function getFitness(route) {
     let total = 0;
     const visitedPickup = new Set();

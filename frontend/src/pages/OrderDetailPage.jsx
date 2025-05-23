@@ -12,7 +12,7 @@ import {
   Loader,
   Home,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Switch } from "@headlessui/react";
 import Swal from "sweetalert2";
 import { useOrderStore } from "../stores/useOrderStore";
@@ -66,6 +66,16 @@ const OrderDetailPage = () => {
     }
 
     setDeliveryDetails(updatedDetails);
+  };
+
+  const [expandedAddresses, setExpandedAddresses] = useState([]);
+
+  const toggleAddress = (index) => {
+    if (expandedAddresses.includes(index)) {
+      setExpandedAddresses(expandedAddresses.filter((i) => i !== index));
+    } else {
+      setExpandedAddresses([...expandedAddresses, index]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -463,209 +473,72 @@ const OrderDetailPage = () => {
               {delivery_details.map((detail, index) => (
                 <div
                   key={index}
-                  className="space-y-4 p-4 border border-gray-600 rounded-lg bg-gray-800"
+                  className="border border-gray-600 rounded-lg bg-gray-800 overflow-hidden mb-4"
                 >
-                  <div className="flex justify-between items-center rounded-lg ">
-                    <h3 className="text-lg font-semibold text-slate-200">
-                      Alamat {index + 1}
-                    </h3>
-
-                    <span
-                      className={`text-sm font-medium px-3 py-1 rounded-full uppercase text-white
-                      ${
-                        detail.address_status === "waiting" ? "bg-blue-400" : ""
-                      } 
-                      ${
-                        detail.address_status === "ongoing"
-                          ? "bg-yellow-500"
-                          : ""
-                      } 
-                      ${
-                        detail.address_status === "delivered"
-                          ? "bg-green-500"
-                          : ""
-                      } 
-                      ${
-                        detail.address_status === "cancelled"
-                          ? "bg-red-500"
-                          : ""
-                      }`}
-                    >
-                      {detail.address_status}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200">
-                      Nama Penerima
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                        placeholder="John Doe"
-                        value={detail.delivery_name}
-                      />
-                    </div>
-                  </div>
-
-                  {dropship && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-200">
-                        Nama Pengirim
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
+                  <div
+                    className="p-4 cursor-pointer flex justify-between items-center hover:bg-gray-700 transition-colors"
+                    onClick={() => toggleAddress(index)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      {expandedAddresses.includes(index) ? (
+                        <p className="text-slate-200 font-medium text-lg">{`Alamat ${
+                          index + 1
+                        }`}</p>
+                      ) : (
+                        <div>
+                          <p className="text-slate-200 font-medium">{`${
+                            index + 1
+                          }. ${detail.delivery_name}`}</p>
+                          <p className="text-slate-400 text-sm">
+                            {detail.delivery_address}
+                          </p>
                         </div>
-                        <input
-                          type="text"
-                          required
-                          readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                          placeholder="John Doe"
-                          value={detail.sender_name}
-                        />
-                      </div>
+                      )}
                     </div>
-                  )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200">
-                      Alamat
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Home
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
+                    <div className="flex items-center ml-4">
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full uppercase ${
+                          detail.address_status === "waiting"
+                            ? "bg-blue-400"
+                            : detail.address_status === "ongoing"
+                            ? "bg-yellow-500"
+                            : detail.address_status === "delivered"
+                            ? "bg-green-500"
+                            : detail.address_status === "cancelled"
+                            ? "bg-red-500"
+                            : "bg-gray-500"
+                        } text-white`}
+                      >
+                        {detail.address_status}
+                      </span>
+                      <svg
+                        className={`w-4 h-4 ml-2 text-gray-400 transform transition-transform ${
+                          expandedAddresses.includes(index) ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
                         />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                        placeholder="Jalan A No. 1"
-                        value={detail.delivery_address}
-                      />
-                    </div>
-                  </div>
-
-                  {detail.lat && detail.long && user.role === "admin" && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-200">
-                        Titik Koordinat
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <MapPin
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          required
-                          readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                          placeholder="Jalan A No. 1"
-                          value={`${detail.lat}, ${detail.long}`}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200">
-                      Nomor Telepon
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <input
-                        type="tel"
-                        pattern="[0-9]{10,12}"
-                        required
-                        readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                        placeholder="08123456789"
-                        value={detail.delivery_phone_number}
-                      />
+                      </svg>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200">
-                      Catatan Tambahan
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
-                        <NotepadText
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <textarea
-                        rows={5}
-                        value={detail.delivery_notes}
-                        readOnly
-                        className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {detail.courier_id && user.role === "customer" && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-200">
-                        Nama Kurir
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Truck
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          required
-                          readOnly
-                          className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                          placeholder="John Doe"
-                          value={detail.courier_name}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {user.role === "admin" &&
-                    (pickup_details.service_id === 2 ||
-                      pickup_details.service_id === 3 ||
-                      pickup_details.service_id === 4) &&
-                    detail.courier_name && (
+                  {expandedAddresses.includes(index) && (
+                    <div className="p-4 space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-200">
-                          Nama Kurir
+                          Nama Penerima
                         </label>
                         <div className="mt-1 relative rounded-md shadow-sm">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Truck
+                            <User
                               className="h-5 w-5 text-gray-400"
                               aria-hidden="true"
                             />
@@ -676,59 +549,229 @@ const OrderDetailPage = () => {
                             readOnly
                             className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
                             placeholder="John Doe"
-                            value={detail.courier_name}
+                            value={detail.delivery_name}
                           />
                         </div>
                       </div>
-                    )}
 
-                  {user.role === "admin" && pickup_details.service_id === 1 && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-200">
-                        Nama Kurir
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Truck
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
+                      {dropship && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200">
+                            Nama Pengirim
+                          </label>
+                          <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <User
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              readOnly
+                              className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                              placeholder="John Doe"
+                              value={detail.sender_name}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200">
+                          Alamat
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Home
+                              className="h-5 w-5 text-gray-400"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            readOnly
+                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                            placeholder="Jalan A No. 1"
+                            value={detail.delivery_address}
                           />
                         </div>
-                        <select
-                          className="block w-full px-3 py-2 pl-10 pr-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                          value={detail.courier_id || ""}
-                          onChange={(e) =>
-                            handleCourierChange(index, Number(e.target.value))
-                          }
-                        >
-                          <option value={null}>Pilih Kurir</option>
-                          {couriers.map((courier) => (
-                            <option key={courier.id} value={courier.id}>
-                              {courier.name}
-                            </option>
-                          ))}
-                        </select>
                       </div>
-                    </div>
-                  )}
 
-                  {detail.proof_image && (
-                    <div className="relative">
-                      <label className="block text-sm font-medium text-slate-200">
-                        Bukti Foto
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <img
-                          src={detail.proof_image}
-                          alt="Bukti Pengiriman"
-                          className="block w-full h-auto rounded-md shadow-sm border border-gray-600"
-                        />
-                        {detail.proof_coordinate && (
-                          <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white text-lg font-semibold px-2 py-1 rounded">
-                            {`Koordinat : ${detail.proof_coordinate}`}
+                      {detail.lat && detail.long && user.role === "admin" && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200">
+                            Titik Koordinat
+                          </label>
+                          <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <MapPin
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              readOnly
+                              className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                              placeholder="Jalan A No. 1"
+                              value={`${detail.lat}, ${detail.long}`}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200">
+                          Nomor Telepon
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Phone
+                              className="h-5 w-5 text-gray-400"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <input
+                            type="tel"
+                            pattern="[0-9]{10,12}"
+                            required
+                            readOnly
+                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                            placeholder="08123456789"
+                            value={detail.delivery_phone_number}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200">
+                          Catatan Tambahan
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-start pt-2 pointer-events-none">
+                            <NotepadText
+                              className="h-5 w-5 text-gray-400"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <textarea
+                            rows={5}
+                            value={detail.delivery_notes}
+                            readOnly
+                            className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {detail.courier_id && user.role === "customer" && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200">
+                            Nama Kurir
+                          </label>
+                          <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Truck
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              readOnly
+                              className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                              placeholder="John Doe"
+                              value={detail.courier_name}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {user.role === "admin" &&
+                        (pickup_details.service_id === 2 ||
+                          pickup_details.service_id === 3 ||
+                          pickup_details.service_id === 4) &&
+                        detail.courier_name && (
+                          <div>
+                            <label className="block text-sm font-medium text-slate-200">
+                              Nama Kurir
+                            </label>
+                            <div className="mt-1 relative rounded-md shadow-sm">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Truck
+                                  className="h-5 w-5 text-gray-400"
+                                  aria-hidden="true"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                required
+                                readOnly
+                                className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                                placeholder="John Doe"
+                                value={detail.courier_name}
+                              />
+                            </div>
                           </div>
                         )}
-                      </div>
+
+                      {user.role === "admin" &&
+                        pickup_details.service_id === 1 && (
+                          <div>
+                            <label className="block text-sm font-medium text-slate-200">
+                              Nama Kurir
+                            </label>
+                            <div className="mt-1 relative rounded-md shadow-sm">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Truck
+                                  className="h-5 w-5 text-gray-400"
+                                  aria-hidden="true"
+                                />
+                              </div>
+                              <select
+                                className="block w-full px-3 py-2 pl-10 pr-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                                value={detail.courier_id || ""}
+                                onChange={(e) =>
+                                  handleCourierChange(
+                                    index,
+                                    Number(e.target.value)
+                                  )
+                                }
+                              >
+                                <option value={null}>Pilih Kurir</option>
+                                {couriers.map((courier) => (
+                                  <option key={courier.id} value={courier.id}>
+                                    {courier.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        )}
+
+                      {detail.proof_image && (
+                        <div className="relative">
+                          <label className="block text-sm font-medium text-slate-200">
+                            Bukti Foto
+                          </label>
+                          <div className="mt-1 relative rounded-md shadow-sm">
+                            <img
+                              src={detail.proof_image}
+                              alt="Bukti Pengiriman"
+                              className="block w-full h-auto rounded-md shadow-sm border border-gray-600"
+                            />
+                            {detail.proof_coordinate && (
+                              <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white text-lg font-semibold px-2 py-1 rounded">
+                                {`Koordinat : ${detail.proof_coordinate}`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

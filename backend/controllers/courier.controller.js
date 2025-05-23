@@ -525,43 +525,39 @@ export const uploadBuktiFoto = async (req, res) => {
       `;
     }
 
-    // Cek status order
-    const orderId = deliveryToUpload.order_id;
-    const orderDetailsStatus = await sql`
-      SELECT address_status
-      FROM order_details
-      WHERE order_id = ${orderId}
-    `;
+    // Ambil semua order_id dari pickup_details
+    const orderIds = data.pickup_details.map((pickup) => pickup.order_id);
 
-    console.log("order detail status:", orderDetailsStatus);
+    // Loop setiap order_id dan update status orderya
+    for (const orderId of orderIds) {
+      const orderDetailsStatus = await sql`
+        SELECT address_status
+        FROM order_details
+        WHERE order_id = ${orderId}
+      `;
 
-    const statuses = orderDetailsStatus.map((row) => row.address_status);
+      const statuses = orderDetailsStatus.map((row) => row.address_status);
 
-    let newOrderStatus = "waiting";
+      let newOrderStatus = "waiting";
 
-    const allWaiting = statuses.every((status) => status === "waiting");
-    const allDelivered = statuses.every((status) => status === "delivered");
-    const hasWaiting = statuses.includes("waiting");
-    const hasOngoing = statuses.includes("ongoing");
+      const allWaiting = statuses.every((status) => status === "waiting");
+      const allDelivered = statuses.every((status) => status === "delivered");
 
-    console.log("semua status:", statuses);
+      if (allWaiting) {
+        newOrderStatus = "waiting";
+      } else if (allDelivered) {
+        newOrderStatus = "finished";
+      } else {
+        newOrderStatus = "ongoing";
+      }
 
-    if (allWaiting) {
-      newOrderStatus = "waiting";
-    } else if (allDelivered) {
-      newOrderStatus = "finished";
-    } else {
-      newOrderStatus = "ongoing";
+      // Update order_status pada tabel orders
+      await sql`
+        UPDATE orders
+        SET order_status = ${newOrderStatus}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${orderId}
+      `;
     }
-    console.log("order status:", newOrderStatus);
-
-    // Update order_status pada tabel orders
-    await sql`
-      UPDATE orders
-      SET order_status = ${newOrderStatus}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${orderId}
-    `;
-
     res.status(200).json({
       success: true,
       message: "Berhasil upload bukti foto.",
