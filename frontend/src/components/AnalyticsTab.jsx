@@ -5,8 +5,8 @@ import {
   Package,
   ShoppingCart,
   DollarSign,
-  ClipboardList,
   Truck,
+  MapPin,
 } from "lucide-react";
 import {
   LineChart,
@@ -100,7 +100,7 @@ const AnalyticsTab = () => {
           <AnalyticsCard
             title="Total Addresses"
             value={analyticsData.addresses.toLocaleString()}
-            icon={ClipboardList}
+            icon={MapPin}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-center">
