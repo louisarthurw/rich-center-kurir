@@ -112,6 +112,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
         String serviceImage = '';
 
         try {
+          // Diambil first karena dalam 1 hari, 1 kurir pasti menangani jenis service yang sama
           final firstPickup = regularServices[0] as Map<String, dynamic>;
           if (firstPickup['service_id'] != null) {
             final serviceResponse = await AssignmentServices()
@@ -135,7 +136,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           });
         }).length;
 
-        // Get status order
+        // Get status order (waiting, ongoing, finished)
         final groupDeliveryDetails = deliveryDetails.where((delivery) {
           final deliveryMap = delivery as Map<String, dynamic>;
           return regularServices.any((pickup) {

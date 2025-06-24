@@ -508,7 +508,7 @@ function calculateSilhouetteScore(vectors, labels, distanceFn) {
     const ownCluster = labels[i];
     const ownIndices = clusterMap.get(ownCluster).filter((idx) => idx !== i);
 
-    // a(i)
+    // a(i) = rata-rata jarak antar titik i dengan titik lainnya dalam cluster yang sama
     let a = 0;
     if (ownIndices.length > 0) {
       const aSum = ownIndices.reduce(
@@ -518,7 +518,7 @@ function calculateSilhouetteScore(vectors, labels, distanceFn) {
       a = aSum / ownIndices.length;
     }
 
-    // b(i)
+    // b(i) = rata-rata jarak antar titik i dengan titik lainnya dalam cluster lain yang paling dekat
     let b = Infinity;
     for (const [label, indices] of clusterMap.entries()) {
       if (label === ownCluster) continue;
@@ -532,7 +532,7 @@ function calculateSilhouetteScore(vectors, labels, distanceFn) {
       }
     }
 
-    // silhouette score s(i)
+    // silhouette score s(i) = (b(i)-a(i)) / max(a(i),b(i))
     const s = a === 0 && b === 0 ? 0 : (b - a) / Math.max(a, b);
     silhouetteScores[i] = s;
   }
@@ -557,6 +557,7 @@ export const assignKurir = async (req, res) => {
           AND status = 'active'
         ORDER BY id ASC
       `;
+    // console.log(available_regular_couriers)
 
     if (available_regular_couriers.length === 0) {
       return res.status(404).json({
@@ -582,6 +583,58 @@ export const assignKurir = async (req, res) => {
       parseFloat(order.lat),
       parseFloat(order.long),
     ]);
+    // console.log(vectors);
+
+    // handle jika cuma ada 1 alamat pengiriman, langsung acak tanpa clustering
+    if (vectors.length === 1) {
+      const courier =
+        available_regular_couriers[
+          Math.floor(Math.random() * available_regular_couriers.length)
+        ];
+      
+      const courierId = courier.id;
+      const orderDetail = order_details[0];
+      const centroidStr = `${orderDetail.lat},${orderDetail.long}`;
+
+      await sql`
+        UPDATE order_details
+        SET courier_id = ${courierId}, cluster_centroid = ${centroidStr}
+        WHERE id = ${orderDetail.id}
+      `;
+
+      await sql`
+        UPDATE orders
+        SET courier_id = ${courierId}
+        WHERE id = ${orderDetail.order_id}
+      `;
+
+      const tokensResult = await sql`
+        SELECT fcm_token
+        FROM notifications
+        WHERE courier_id = ${courierId}
+      `;
+
+      for (const { fcm_token } of tokensResult) {
+        try {
+          await sendFcmNotification(
+            fcm_token,
+            "Ada order masuk",
+            "Anda mendapatkan tugas baru!"
+          );
+          console.log(`Notifikasi berhasil dikirim ke Courier ID ${courierId}`);
+        } catch (err) {
+          console.error(
+            `Gagal kirim notifikasi ke Courier ID ${courierId}`,
+            err
+          );
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Hanya satu alamat. Courier assigned secara acak.",
+      });
+    }
 
     // Apply skmeans untuk clustering
     // const result = skmeans(vectors, available_regular_couriers.length);
@@ -592,7 +645,7 @@ export const assignKurir = async (req, res) => {
       10000,
       haversineDistance
     );
-    // console.log(result);
+    console.log(result);
 
     // Hitung silhouette score
     const { silhouetteScores, clusterMap, totalAvg } = calculateSilhouetteScore(

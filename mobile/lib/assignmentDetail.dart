@@ -32,9 +32,13 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
   Map<String, dynamic>? assignmentData;
   Map<String, dynamic>? _selectedMarkerData;
   GoogleMapController? mapController;
+
   PolylinePoints polylinePoints = PolylinePoints();
+  // menyimpan koordinat yang akan dilalui rute
   Map<PolylineId, Polyline> polylines = {};
+  // menyimpan koordinat semua lokasi yang sudah diurutkan
   List<LatLng> routePoints = [];
+  // menyimpan semua lokasi yang akan dilalui (tidak urut) dan detailnya
   List<Map<String, dynamic>> courierRouteSequence = [];
   String? initialCoordinate;
 
@@ -118,7 +122,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
           deliveryGroups[0][0]['initial_coordinate']?.toString();
     }
 
-    // ambil koordinat awal kurir
+    // ambil koordinat awal kurir, simpan di courierRouteSequence
     if (initialCoordinate != null && initialCoordinate!.isNotEmpty) {
       final parts = initialCoordinate!.split(',');
       if (parts.length == 2) {
@@ -139,7 +143,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
 
     // rute hanya ada saat sudah generate route (ada koordinat awal kurir)
     if (hasRouteSequence) {
-      // ambil koordinat pickup
+      // ambil koordinat pickup, simpan di courierRouteSequence
       final pickupList = assignmentData?['pickup_details'] ?? [];
       for (final pickup in pickupList) {
         try {
@@ -184,7 +188,7 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
         }
       }
 
-      // ambil koordinat delivery
+      // ambil koordinat delivery, simpan di courierRouteSequence
       for (final group in deliveryGroups) {
         for (final delivery in group) {
           try {

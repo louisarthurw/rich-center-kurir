@@ -57,7 +57,7 @@ const OrderPage = ({ id }) => {
   // loading gmaps
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "MY_API_KEY",
+    googleMapsApiKey: "AIzaSyDYXY6ngijPiwNtIyglgXHp0Uy7Qd6EJRg",
     libraries: ["places"],
   });
 
