@@ -88,6 +88,7 @@ const OrdersList = () => {
               {ordersForDate.length === 1 ? "order" : "orders"})
             </div>
 
+            {/* groupedOrders[date]?.some((order) => !order.courier_id)  */}
             {formatDate(todayJakarta) === date ? (
               <button
                 className="bg-[#10baee] hover:bg-[#0aa2cc] text-white font-semibold py-2 px-4 rounded-lg"

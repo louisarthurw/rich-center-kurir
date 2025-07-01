@@ -120,6 +120,7 @@ export const generateRoute = async (req, res) => {
     }
 
     console.log("time matrix:", timeMatrix);
+    console.log("coordinates:", coordinates);
 
     const { bestRoute, bestTime } = runGA(timeMatrix, coordinates);
 

@@ -463,6 +463,21 @@ export const getAssignmentCourierByOrderId = async (req, res) => {
   }
 };
 
+function haversineDistance(p1, p2) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(p2[0] - p1[0]);
+  const dLon = toRad(p2[1] - p1[1]);
+  const lat1 = toRad(p1[0]);
+  const lat2 = toRad(p2[0]);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export const uploadBuktiFoto = async (req, res) => {
   const { id, image, proof_coordinate, data } = req.body;
 
@@ -484,6 +499,26 @@ export const uploadBuktiFoto = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: "Ada lokasi yang belum dikunjungi, dilarang mendahului rute",
+      });
+    }
+
+    // Pengecekan geotagging radius 100m
+    const [proofLat, proofLng] = proof_coordinate.split(",").map(Number);
+    const targetLat = parseFloat(deliveryToUpload.lat);
+    const targetLng = parseFloat(deliveryToUpload.long);
+
+    const distance = haversineDistance(
+      [proofLat, proofLng],
+      [targetLat, targetLng]
+    );
+
+    console.log("Jarak kurir dari lokasi pengiriman:", distance, "km");
+
+    if (distance > 0.1) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Gagal upload bukti foto karena lokasi anda terlalu jauh dari lokasi pengiriman (lebih dari 100 meter).",
       });
     }
 
