@@ -5,7 +5,6 @@ import {
   MapPin,
   Phone,
   Package,
-  Scale,
   Calendar,
   NotepadText,
   Truck,
@@ -391,29 +390,64 @@ const OrderDetailPage = () => {
 
                 <div>
                   <label
-                    htmlFor="weight"
-                    className="block text-sm font-medium text-slate-200"
+                    htmlFor="dimensions"
+                    className="block text-sm font-medium text-slate-200 mb-1"
                   >
-                    Perkiraan Berat (kg)
+                    Ukuran per Barang (Panjang x Lebar x Tinggi)
+                    <span className="text-[#10baee]"> *</span>
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Scale
-                        className="h-5 w-5 text-gray-400"
-                        aria-hidden="true"
+
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 w-full">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        required
+                        id="length"
+                        value={pickup_details.length}
+                        readOnly
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                        placeholder="30"
                       />
                     </div>
-                    <input
-                      id="weight"
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      required
-                      readOnly
-                      value={pickup_details.weight}
-                      className="block w-full px-3 py-2 pl-10 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
-                      placeholder="1,5"
-                    />
+                    <div className="text-center text-slate-200 mt-1 sm:mt-0">
+                      cm x
+                    </div>
+
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        required
+                        id="width"
+                        value={pickup_details.width}
+                        readOnly
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                        placeholder="10"
+                      />
+                    </div>
+                    <div className="text-center text-slate-200 mt-1 sm:mt-0">
+                      cm x
+                    </div>
+
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        required
+                        id="height"
+                        value={pickup_details.height}
+                        readOnly
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-slate-200 focus:outline-none focus:ring-[#10baee] focus:border-[#10baee] sm:text-sm"
+                        placeholder="20"
+                      />
+                    </div>
+                    <div className="text-center text-slate-200 mt-1 sm:mt-0">
+                      cm
+                    </div>
                   </div>
                 </div>
 

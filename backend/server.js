@@ -91,6 +91,7 @@ async function initDB() {
         password VARCHAR(255) NOT NULL,
         phone_number VARCHAR(255) NOT NULL,
         address VARCHAR(255) NOT NULL,
+        address_coordinate VARCHAR(255),
         availability_status VARCHAR(255) NOT NULL DEFAULT 'available',
         role VARCHAR(255) NOT NULL DEFAULT 'regular',
         status VARCHAR(255) NOT NULL DEFAULT 'active',
@@ -98,6 +99,7 @@ async function initDB() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     `;
+    // weight NUMERIC(5,2) NOT NULL,
     await sql`
     CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
@@ -111,7 +113,9 @@ async function initDB() {
         pickup_address VARCHAR(255) NOT NULL,
         pickup_notes VARCHAR(255),
         type VARCHAR(255) NOT NULL,
-        weight NUMERIC(5,2) NOT NULL,
+        length INTEGER NOT NULL,
+        width INTEGER NOT NULL,
+        height INTEGER NOT NULL,
         take_package_on_behalf_of VARCHAR(255),
         lat NUMERIC(11,7),
         long NUMERIC(11,7),

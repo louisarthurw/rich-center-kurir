@@ -8,8 +8,11 @@ dotenv.config();
 export const generateRoute = async (req, res) => {
   const { courier_id, initial_location, data } = req.body;
 
+  console.log("data:", data);
+
   try {
     const coordinates = [];
+    const pickupMap = new Map();
 
     // initial location
     coordinates.push({
@@ -23,12 +26,21 @@ export const generateRoute = async (req, res) => {
     data.pickup_details.forEach((pickup) => {
       const courierIds = pickup.courier_id.split(",").map((id) => parseInt(id));
       if (courierIds.includes(courier_id)) {
+        const volume =
+          pickup.length * pickup.width * pickup.height * pickup.total_address;
+
+        pickupMap.set(pickup.order_id, {
+          volumePerItem: pickup.length * pickup.width * pickup.height,
+          totalVolume: volume,
+        });
+
         coordinates.push({
           type: "pickup",
           id: `pickup-${pickup.order_id}`,
           lat: parseFloat(pickup.lat),
           long: parseFloat(pickup.long),
           order_id: pickup.order_id,
+          volume: volume,
         });
       }
     });
@@ -36,12 +48,14 @@ export const generateRoute = async (req, res) => {
     // delivery location
     data.delivery_details.flat().forEach((delivery) => {
       if (delivery.courier_id === courier_id) {
+        const pickup = pickupMap.get(delivery.order_id);
         coordinates.push({
           type: "delivery",
           id: `delivery-${delivery.order_detail_id}`,
           lat: parseFloat(delivery.lat),
           long: parseFloat(delivery.long),
           order_id: delivery.order_id,
+          volume: pickup ? pickup.volumePerItem : 0,
         });
       }
     });

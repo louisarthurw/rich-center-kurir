@@ -342,6 +342,9 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                   'notes': pickup['pickup_notes']?.toString() ?? '',
                   'take_on_behalf':
                       pickup['take_package_on_behalf_of']?.toString() ?? '',
+                  'item_type': pickup['type']?.toString() ?? '',
+                  'size':
+                      '${pickup['length']?.toString() ?? ''} x ${pickup['width']?.toString() ?? ''} x ${pickup['height']?.toString() ?? ''}',
                   'visit_order': visitOrder,
                 };
               });
@@ -562,6 +565,9 @@ class _AssignmentDetailPageState extends State<AssignmentDetailPage> {
                 data['take_on_behalf']?.toString().isNotEmpty == true
                     ? data['take_on_behalf']!.toString()
                     : "-"),
+            20.height,
+            _infoLine("Jenis Barang", data['item_type']!.toString()),
+            _infoLine("Ukuran Setiap Barang", data['size']!.toString()),
           ],
           if (data['type'] == 'delivery') ...[
             _infoLine(

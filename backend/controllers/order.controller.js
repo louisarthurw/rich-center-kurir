@@ -190,7 +190,7 @@ export const createOrder = async (req, res) => {
     const newOrder = await sql`
       INSERT INTO orders (
         user_id, service_id, total_address, subtotal, date, pickup_name,
-        pickup_phone_number, pickup_address, pickup_notes, type, weight,
+        pickup_phone_number, pickup_address, pickup_notes, type, length, width, height,
         take_package_on_behalf_of, lat, long, courier_id, visit_order,
       payment_status, order_status
       ) VALUES (
@@ -201,8 +201,8 @@ export const createOrder = async (req, res) => {
       pickupDetails.pickup_address
     },
         ${pickupDetails.pickup_notes}, ${pickupDetails.type}, ${
-      pickupDetails.weight
-    },
+      pickupDetails.length
+    }, ${pickupDetails.width}, ${pickupDetails.height},
         ${pickupDetails.take_package_on_behalf_of}, ${
       pickupDetails.pickup_lat
     }, ${
@@ -559,67 +559,135 @@ export async function calculateSilhouetteScore(vectors, labels, distanceFn) {
   return { silhouetteScores, totalAvg };
 }
 
-async function kMeansClustering(locations, k, distanceFn, maxIterations = 100) {
+async function KMeansClustering(
+  locations,
+  k,
+  distanceFn,
+  maxIterations = 1000
+) {
   const n = locations.length;
+  const maxPerCluster = Math.ceil(n / k);
 
-  // Inisialisasi centroid secara acak
-  const centroids = locations
-    .slice()
-    .sort(() => 0.5 - Math.random())
-    .slice(0, k);
+  // Inisialisasi K-Means++
+  let centroids = [];
+
+  // Pilih centroid pertama secara acak dari locations
+  centroids.push(locations[Math.floor(Math.random() * n)]);
+
+  // Hitung jarak minimum titik ke centroid yang sudah terpilih
+  async function getMinDistToCentroids(point, centroids) {
+    let minDist = Infinity;
+    for (const centroid of centroids) {
+      const dist = await distanceFn(point, centroid);
+      if (dist < minDist) minDist = dist;
+    }
+    return minDist;
+  }
+
+  // Pilih centroid berikutnya sampai k centroid terpilih
+  while (centroids.length < k) {
+    // Hitung jarak minimum kuadrat tiap titik ke centroid terdekat
+    const distances = await Promise.all(
+      locations.map((loc) => getMinDistToCentroids(loc, centroids))
+    );
+
+    // Pemilihan berdasarkan jarak kuadrat agar titik jauh lebih mungkin dipilih
+    const distancesSquared = distances.map((d) => d * d);
+
+    // Hitung total jarak kuadrat dan probabilitas tiap titik
+    const sumDistancesSquared = distancesSquared.reduce((a, b) => a + b, 0);
+    const probabilities = distancesSquared.map((d) => d / sumDistancesSquared);
+
+    const cumulativeProbs = [];
+    probabilities.reduce((acc, curr, i) => {
+      cumulativeProbs[i] = acc + curr;
+      return cumulativeProbs[i];
+    }, 0);
+
+    // Pilih titik baru berdasarkan probabilitas
+    const r = Math.random();
+    let nextCentroidIndex = cumulativeProbs.findIndex((p) => r < p);
+    if (nextCentroidIndex === -1) nextCentroidIndex = n - 1;
+
+    centroids.push(locations[nextCentroidIndex]);
+  }
 
   let assignments = new Array(n).fill(-1);
 
   for (let iter = 0; iter < maxIterations; iter++) {
     let hasChanged = false;
 
-    // Assign points to nearest centroid
+    // Simpan jumlah alamat yang ada dalam cluster
+    const clusterCounts = Array(k).fill(0);
+    const newAssignments = new Array(n).fill(-1);
+
     for (let i = 0; i < n; i++) {
-      let minDist = Infinity;
       let bestCluster = -1;
+      let minDist = Infinity;
 
       for (let c = 0; c < k; c++) {
+        // Skip memasukkan titik jika cluster sudah penuh
+        if (clusterCounts[c] >= maxPerCluster) continue;
+
         const dist = await distanceFn(locations[i], centroids[c]);
+        // Menentukan cluster terdekat yang masih punya slot
         if (dist < minDist) {
           minDist = dist;
           bestCluster = c;
         }
       }
 
-      if (assignments[i] !== bestCluster) {
-        hasChanged = true;
-        assignments[i] = bestCluster;
+      // Tambahkan titik ke dalam cluster terdekat tersebut
+      if (bestCluster !== -1) {
+        newAssignments[i] = bestCluster;
+        clusterCounts[bestCluster]++;
+      } else {
+        throw new Error(`Tidak ada cluster tersedia untuk lokasi index ${i}`);
       }
     }
 
+    // Cek apakah ada perubahan assignment
+    // assignments --> array yang menyimpan cluster mana lokasi i ditugaskan pada iterasi sebelumnya.
+    // newAssignments --> array yang menyimpan cluster mana lokasi i ditugaskan pada iterasi saat ini.
+    for (let i = 0; i < n; i++) {
+      if (assignments[i] !== newAssignments[i]) {
+        hasChanged = true;
+        break;
+      }
+    }
+
+    assignments = newAssignments;
+
+    // Jika tidak ada perubahan, maka looping berhenti karena sudah optimal
     if (!hasChanged) break;
 
-    // Update centroids
+    // Update centroid dari rata-rata lokasi dalam cluster
     const newCentroids = Array(k)
       .fill()
       .map(() => [0, 0]);
     const counts = Array(k).fill(0);
 
     for (let i = 0; i < n; i++) {
-      const cluster = assignments[i];
-      newCentroids[cluster][0] += locations[i][0];
-      newCentroids[cluster][1] += locations[i][1];
-      counts[cluster]++;
+      // newCentroids[c] menyimpan penjumlahan koordinat semua titik dalam cluster c
+      // counts[c] menghitung berapa banyak titik yang ada di cluster c
+      const c = assignments[i];
+      newCentroids[c][0] += locations[i][0];
+      newCentroids[c][1] += locations[i][1];
+      counts[c]++;
     }
 
     for (let c = 0; c < k; c++) {
       if (counts[c] === 0) {
-        // Hindari centroid kosong, pilih random
+        // Jika cluster kosong, pindahkan centroid ke lokasi acak
         newCentroids[c] = locations[Math.floor(Math.random() * n)];
       } else {
+        // Hitung rata-rata titik-titik dalam cluster (centroid baru)
         newCentroids[c][0] /= counts[c];
         newCentroids[c][1] /= counts[c];
       }
     }
 
-    for (let c = 0; c < k; c++) {
-      centroids[c] = newCentroids[c];
-    }
+    centroids = newCentroids;
   }
 
   return { idxs: assignments, centroids };
@@ -649,7 +717,7 @@ export const assignKurir = async (req, res) => {
 
     // Ambil semua alamat pengiriman kurir flat motor
     const order_details = await sql`
-        SELECT od.id, od.order_id, od.lat, od.long
+        SELECT od.id, od.order_id, od.lat, od.long, od.delivery_name
         FROM order_details od
         INNER JOIN orders o ON od.order_id = o.id
         WHERE DATE(o.date) = ${date}
@@ -758,7 +826,7 @@ export const assignKurir = async (req, res) => {
     }
 
     // Apply kmeans untuk clustering
-    const result = await kMeansClustering(
+    const result = await KMeansClustering(
       vectors,
       available_regular_couriers.length,
       getDistance
@@ -793,14 +861,14 @@ export const assignKurir = async (req, res) => {
             SET courier_id = ${courierId}, cluster_centroid = ${centroidStr}
             WHERE id = ${order_details[index].id}
           `;
-          console.log(
-            `Assigned Courier #${courierId} to OrderDetail ID: ${order_details[index].id}`
-          );
-          console.log(
-            `Silhouette score OrderDetailID ${
-              order_details[index].id
-            }: ${silhouetteScores[index].toFixed(4)}\n`
-          );
+          // console.log(
+          //   `Assigned Courier #${courierId} to OrderDetail ID: ${order_details[index].id}`
+          // );
+          // console.log(
+          //   `Silhouette score OrderDetailID ${
+          //     order_details[index].id
+          //   }: ${silhouetteScores[index].toFixed(4)}\n`
+          // );
 
           // Tambahkan courierId ke daftar yang akan diupdate di orders
           const orderId = order_details[index].order_id;
@@ -816,6 +884,35 @@ export const assignKurir = async (req, res) => {
         }
       }
     }
+
+    // print hasil clustering
+    console.log("===== HASIL CLUSTERING =====");
+    for (const [i, courier] of available_regular_couriers.entries()) {
+      const courierId = courier.id;
+
+      // Cari index order_details yang masuk ke cluster i
+      const clusterIndices = result.idxs
+        .map((clusterIdx, idx) => (clusterIdx === i ? idx : -1))
+        .filter((idx) => idx !== -1);
+
+      const detailList = [];
+      const scoreList = [];
+
+      for (const idx of clusterIndices) {
+        const detail = order_details[idx];
+        const placeName = detail.delivery_name || "-";
+        const score = silhouetteScores[idx];
+
+        detailList.push(`OrderDetailID ${detail.id} (${placeName})`);
+        scoreList.push(score.toFixed(4));
+      }
+
+      console.log(
+        `Cluster ${i + 1} (Courier ID #${courierId}) = ${detailList.join(", ")}`
+      );
+      console.log(`Silhouette Score = ${scoreList.join(", ")}\n`);
+    }
+
     console.log(
       `Silhouette Score rata-rata keseluruhan: ${totalAvg.toFixed(4)}\n`
     );

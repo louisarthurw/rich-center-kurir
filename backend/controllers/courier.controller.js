@@ -9,7 +9,7 @@ dotenv.config();
 export const getAllCouriers = async (req, res) => {
   try {
     const couriers = await sql`
-        SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at FROM couriers
+        SELECT id, name, email, phone_number, address, address_coordinate, availability_status, role, status, created_at, updated_at FROM couriers
         ORDER BY 
           (status != 'active'), 
           id ASC
@@ -32,7 +32,7 @@ export const getAllCouriers = async (req, res) => {
 export const getAvailableCouriers = async (req, res) => {
   try {
     const couriers = await sql`
-        SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at 
+        SELECT id, name, email, phone_number, address, address_coordinate, availability_status, role, status, created_at, updated_at 
         FROM couriers
         WHERE availability_status = 'available' 
           AND role = 'regular' 
@@ -60,7 +60,7 @@ export const getCourierById = async (req, res) => {
 
   try {
     const courier = await sql`
-      SELECT id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at FROM couriers WHERE id = ${id}
+      SELECT id, name, email, phone_number, address, address_coordinate, availability_status, role, status, created_at, updated_at FROM couriers WHERE id = ${id}
     `;
 
     if (courier.length > 0) {
@@ -75,10 +75,18 @@ export const getCourierById = async (req, res) => {
 };
 
 export const addCourier = async (req, res) => {
-  const { name, email, password, phone_number, address } = req.body;
+  const { name, email, password, phone_number, address, address_coordinate } =
+    req.body;
 
   if (!name || !email || !password || !phone_number || !address) {
     return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (!address_coordinate) {
+    return res.status(400).json({
+      success: false,
+      error: "Alamat kurir harus dipilih dari suggestion yang diberikan!",
+    });
   }
 
   try {
@@ -106,8 +114,8 @@ export const addCourier = async (req, res) => {
 
     // add new courier
     const newCourier = await sql`
-      INSERT INTO couriers (name, email, password, phone_number, address, availability_status, role, status)
-      VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number}, ${address}, 'available', 'regular', 'active')
+      INSERT INTO couriers (name, email, password, phone_number, address, address_coordinate, availability_status, role, status)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number}, ${address}, ${address_coordinate},'available', 'regular', 'active')
       RETURNING id, name, email, password, phone_number, address, availability_status, role, status, created_at, updated_at
     `;
 
@@ -121,7 +129,15 @@ export const addCourier = async (req, res) => {
 
 export const updateCourier = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, address, role, status } = req.body;
+  const {
+    name,
+    email,
+    phone_number,
+    address,
+    address_coordinate,
+    role,
+    status,
+  } = req.body;
 
   try {
     // Cek apakah kurir dengan email/phone_number yang baru sudah ada di database
@@ -148,7 +164,7 @@ export const updateCourier = async (req, res) => {
 
     const updatedCourier = await sql`
       UPDATE couriers
-      SET name = ${name}, email = ${email}, phone_number = ${phone_number}, address = ${address}, role = ${role}, status = ${status}, updated_at = CURRENT_TIMESTAMP
+      SET name = ${name}, email = ${email}, phone_number = ${phone_number}, address = ${address}, address_coordinate = ${address_coordinate}, role = ${role}, status = ${status}, updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING id, name, email, phone_number, address, availability_status, role, status, created_at, updated_at
     `;
@@ -239,7 +255,9 @@ export const getAllAssignmentCourier = async (req, res) => {
         pickup_address,
         pickup_notes,
         type,
-        weight,
+        length,
+        width,
+        height,
         take_package_on_behalf_of,
         lat,
         long,
@@ -321,7 +339,9 @@ export const getAssignmentCourierByDate = async (req, res) => {
         pickup_address,
         pickup_notes,
         type,
-        weight,
+        length,
+        width,
+        height,
         take_package_on_behalf_of,
         lat,
         long,
@@ -402,7 +422,9 @@ export const getAssignmentCourierByOrderId = async (req, res) => {
         pickup_address,
         pickup_notes,
         type,
-        weight,
+        length,
+        width,
+        height,
         take_package_on_behalf_of,
         lat,
         long,

@@ -13,18 +13,36 @@ export function runGA(timeMatrix, coordinates) {
   function getFitness(route) {
     let total = 0;
     const visitedPickup = new Set();
+    const deliveredItems = new Set();
+
+    // Kapasitas 1 delivery bag = 60x40x40 (cm^3). Ada 2 delivery bag.
+    const MAX_CAPACITY = 192000;
+    let currentVolume = 0;
 
     for (let i = 0; i < route.length - 1; i++) {
       const from = route[i];
       const to = route[i + 1];
       total += timeMatrix[from][to];
 
-      const current = coordinates[to];
-      if (current.type === "pickup") {
-        visitedPickup.add(current.order_id);
-      } else if (current.type === "delivery") {
-        if (!visitedPickup.has(current.order_id)) {
-          total += 9999; // penalti besar jika delivery sebelum pickup
+      const point = coordinates[to];
+
+      if (point.type === "pickup") {
+        if (!visitedPickup.has(point.order_id)) {
+          visitedPickup.add(point.order_id);
+          currentVolume += point.volume;
+
+          if (currentVolume > MAX_CAPACITY) {
+            total += 9999; // penalti jika melebihi kapasitas delivery bag
+          }
+        }
+      }
+
+      if (point.type === "delivery") {
+        if (!visitedPickup.has(point.order_id)) {
+          total += 9999; // penalti jika delivery sebelum pickup
+        } else if (!deliveredItems.has(point.id)) {
+          deliveredItems.add(point.id);
+          currentVolume -= point.volume;
         }
       }
     }
@@ -107,7 +125,7 @@ export function runGA(timeMatrix, coordinates) {
         return population[i];
       }
     }
-    return population[population.length - 1]; 
+    return population[population.length - 1];
   }
 
   // INITIALIZE

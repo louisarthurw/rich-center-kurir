@@ -5,17 +5,7 @@ import axios from "../lib/axios";
 export const useCourierStore = create((set, get) => ({
   couriers: [],
   currentCourier: null,
-  formData: {
-    name: "",
-    email: "",
-    phone_number: "",
-    address: "",
-    role: "",
-    status: "",
-  },
   loading: false,
-  setFormData: (formData) => set({ formData }),
-
   getAllCouriers: async () => {
     set({ loading: true });
     try {
@@ -33,17 +23,17 @@ export const useCourierStore = create((set, get) => ({
       set({ couriers: response.data.data, loading: false });
     } catch (error) {
       set({ error: "Failed to fetch available couriers", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch available couriers");
+      toast.error(
+        error.response.data.error || "Failed to fetch available couriers"
+      );
     }
   },
   getCourier: async (id) => {
     set({ loading: true });
     try {
       const response = await axios.get(`/couriers/${id}`);
-      set({
-        currentCourier: response.data.data,
-        formData: response.data.data, // pre-fill form with current product data
-      });
+
+      set({ currentCourier: response.data.data });
     } catch (error) {
       console.log("Error in getCourier function", error);
       set({ currentCourier: null });
@@ -60,23 +50,25 @@ export const useCourierStore = create((set, get) => ({
         loading: false,
       }));
       toast.success("Courier added successfully");
+      return true;
     } catch (error) {
       toast.error(error.response.data.error);
       set({ loading: false });
+      return false;
     }
   },
-  updateCourier: async (id) => {
+  updateCourier: async (id, updatedData) => {
     set({ loading: true });
     try {
-      const { formData } = get();
-      const response = await axios.put(`/couriers/${id}`, formData);
+      const response = await axios.put(`/couriers/${id}`, updatedData);
       set({ currentCourier: response.data.data });
       toast.success("Courier updated successfully");
-
       get().getAllCouriers();
+      return true;
     } catch (error) {
-      toast.error(error.response.data.message || "Something went wrong");
-      console.log("Error in updateCourier function", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+      console.error("Error in updateCourier function", error);
+      return false;
     } finally {
       set({ loading: false });
     }

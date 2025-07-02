@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { PlusCircle, Loader, XCircle } from "lucide-react";
 import { useCourierStore } from "../stores/useCourierStore";
+import { useJsApiLoader, StandaloneSearchBox } from "@react-google-maps/api";
+import LoadingSpinner from "./LoadingSpinner";
 
 const AddCourierForm = ({ onClose }) => {
   const [newCourier, setNewCourier] = useState({
@@ -10,6 +12,7 @@ const AddCourierForm = ({ onClose }) => {
     password: "",
     phone_number: "",
     address: "",
+    address_coordinate: "",
   });
 
   const { addCourier, loading } = useCourierStore();
@@ -17,19 +20,55 @@ const AddCourierForm = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addCourier(newCourier);
-      setNewCourier({
-        name: "",
-        email: "",
-        password: "",
-        phone_number: "",
-        address: "",
-      });
-      onClose();
+      const success = await addCourier(newCourier);
+      
+      if (success === true) {
+        setNewCourier({
+          name: "",
+          email: "",
+          password: "",
+          phone_number: "",
+          address: "",
+          address_coordinate: "",
+        });
+
+        onClose();
+      }
     } catch {
       console.log("error adding new courier");
     }
   };
+
+  // loading gmaps
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "AIzaSyDYXY6ngijPiwNtIyglgXHp0Uy7Qd6EJRg",
+    libraries: ["places"],
+  });
+
+  const searchBoxRef = useRef(null);
+
+  const onSearchBoxLoad = (ref) => {
+    searchBoxRef.current = ref;
+  };
+
+  const onPlacesChanged = () => {
+    const places = searchBoxRef.current.getPlaces();
+    if (places && places.length > 0) {
+      const place = places[0];
+      const address = place.formatted_address || place.name;
+      const coordinate = `${place.geometry.location.lat()},${place.geometry.location.lng()}`;
+      setNewCourier((prev) => ({
+        ...prev,
+        address,
+        address_coordinate: coordinate,
+      }));
+    }
+  };
+
+  if (!isLoaded) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <motion.div
@@ -54,6 +93,7 @@ const AddCourierForm = ({ onClose }) => {
             type="text"
             id="name"
             name="name"
+            placeholder="Kurir"
             value={newCourier.name}
             onChange={(e) =>
               setNewCourier({ ...newCourier, name: e.target.value })
@@ -77,6 +117,7 @@ const AddCourierForm = ({ onClose }) => {
             id="email"
             name="email"
             value={newCourier.email}
+            placeholder="kurir@gmail.com"
             onChange={(e) =>
               setNewCourier({ ...newCourier, email: e.target.value })
             }
@@ -99,6 +140,7 @@ const AddCourierForm = ({ onClose }) => {
             id="password"
             name="password"
             value={newCourier.password}
+            placeholder="*****"
             onChange={(e) =>
               setNewCourier({ ...newCourier, password: e.target.value })
             }
@@ -121,6 +163,7 @@ const AddCourierForm = ({ onClose }) => {
             id="phone_number"
             name="phone_number"
             value={newCourier.phone_number}
+            placeholder="08123456789"
             onChange={(e) =>
               setNewCourier({ ...newCourier, phone_number: e.target.value })
             }
@@ -132,27 +175,33 @@ const AddCourierForm = ({ onClose }) => {
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Address
-          </label>
-          <textarea
-            id="address"
-            name="address"
-            value={newCourier.address}
-            onChange={(e) =>
-              setNewCourier({ ...newCourier, address: e.target.value })
-            }
-            rows="3"
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] 
-					focus:border-[#10baee]"
-            required
-          />
-        </div>
+        <StandaloneSearchBox
+          onLoad={onSearchBoxLoad}
+          onPlacesChanged={onPlacesChanged}
+        >
+          <div>
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-300"
+            >
+              Address
+            </label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={newCourier.address}
+              onChange={(e) =>
+                setNewCourier({ ...newCourier, address: e.target.value })
+              }
+              placeholder="Search address..."
+              className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
+        py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee]
+        focus:border-[#10baee]"
+              required
+            />
+          </div>
+        </StandaloneSearchBox>
 
         <div className="flex mt-4 space-x-4">
           <button

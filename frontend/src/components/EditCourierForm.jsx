@@ -1,26 +1,92 @@
-import { useEffect } from "react";
+// EditCourierForm.jsx
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Loader, XCircle, Save } from "lucide-react";
 import { useCourierStore } from "../stores/useCourierStore";
+import toast from "react-hot-toast";
+import { useJsApiLoader, StandaloneSearchBox } from "@react-google-maps/api";
 
 const EditCourierForm = ({ onClose, id }) => {
-  const {
-    currentCourier,
-    formData,
-    setFormData,
-    loading,
-    getCourier,
-    updateCourier,
-  } = useCourierStore();
+  const { currentCourier, getCourier, updateCourier, loading } =
+    useCourierStore();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone_number: "",
+    address: "",
+    address_coordinate: "",
+    role: "",
+    status: "",
+  });
+  const [addressValid, setAddressValid] = useState(true);
+  const searchBoxRef = useRef(null);
+
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "AIzaSyDYXY6ngijPiwNtIyglgXHp0Uy7Qd6EJRg",
+    libraries: ["places"],
+  });
 
   useEffect(() => {
     getCourier(id);
-  }, [getCourier, id]);
+  }, [id]);
 
-  console.log(currentCourier);
+  useEffect(() => {
+    if (currentCourier) {
+      setFormData({
+        name: currentCourier.name || "",
+        email: currentCourier.email || "",
+        phone_number: currentCourier.phone_number || "",
+        address: currentCourier.address || "",
+        address_coordinate: currentCourier.address_coordinate || "",
+        role: currentCourier.role || "",
+        status: currentCourier.status || "",
+      });
+      setAddressValid(!!currentCourier.address_coordinate);
+    }
+  }, [currentCourier]);
 
-  if (loading) {
-    return <div className="text-black">Loading...</div>;
+  const onSearchBoxLoad = (ref) => {
+    searchBoxRef.current = ref;
+  };
+
+  const onPlacesChanged = () => {
+    const places = searchBoxRef.current.getPlaces();
+    if (places && places.length > 0) {
+      const place = places[0];
+      const address = place.formatted_address || place.name;
+      const coordinate = `${place.geometry.location.lat()},${place.geometry.location.lng()}`;
+      setFormData((prev) => ({
+        ...prev,
+        address,
+        address_coordinate: coordinate,
+      }));
+      setAddressValid(true);
+    }
+  };
+
+  const handleAddressChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: e.target.value,
+      address_coordinate: "",
+    }));
+    setAddressValid(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.address_coordinate) {
+      toast.error("Alamat harus dipilih dari suggestion Google Maps.");
+      setAddressValid(false);
+      return;
+    }
+    const success = await updateCourier(id, formData);
+    if (success) onClose();
+  };
+
+  if (loading && !currentCourier) {
+    return <div className="text-white">Loading...</div>;
   }
 
   return (
@@ -34,211 +100,100 @@ const EditCourierForm = ({ onClose, id }) => {
         Edit Courier
       </h2>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          updateCourier(id);
-          onClose();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2
-						px-3 text-white focus:outline-none focus:ring-2
-						focus:ring-[#10baee] focus:border-[#10baee]"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField
+          label="Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2
-						px-3 text-white focus:outline-none focus:ring-2
-						focus:ring-[#10baee] focus:border-[#10baee]"
-            required
-          />
-        </div>
+        <InputField
+          type="email"
+          label="Email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
 
-        <div>
-          <label
-            htmlFor="phone_number"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Phone Number
-          </label>
-          <input
-            type="text"
-            id="phone_number"
-            name="phone_number"
-            value={formData.phone_number}
-            onChange={(e) =>
-              setFormData({ ...formData, phone_number: e.target.value })
-            }
-            step="0.01"
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm 
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee]
-					focus:border-[#10baee]"
-            required
-          />
-        </div>
+        <InputField
+          label="Phone Number"
+          value={formData.phone_number}
+          onChange={(e) =>
+            setFormData({ ...formData, phone_number: e.target.value })
+          }
+        />
 
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Address
-          </label>
-          <textarea
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            rows="3"
-            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
-						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee] 
-					focus:border-[#10baee]"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300">
-            Role
-          </label>
-          <div className="flex space-x-4 mt-1">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="role"
-                value="regular"
-                checked={formData.role === "regular"}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                className="form-radio text-[#10baee]"
-              />
-              <span className="text-white">Kurir Regular</span>
+        {isLoaded && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300">
+              Address
             </label>
-            <label className="flex items-center space-x-2">
+            <StandaloneSearchBox
+              onLoad={onSearchBoxLoad}
+              onPlacesChanged={onPlacesChanged}
+            >
               <input
-                type="radio"
-                name="role"
-                value="special"
-                checked={formData.role === "special"}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                className="form-radio text-[#10baee]"
+                type="text"
+                value={formData.address}
+                onChange={handleAddressChange}
+                className={`mt-1 block w-full bg-gray-700 border ${
+                  !addressValid ? "border-red-500" : "border-gray-600"
+                } rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee]`}
+                placeholder="Search address..."
+                required
               />
-              <span className="text-white">Kurir Khusus</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="role"
-                value="car"
-                checked={formData.role === "car"}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                className="form-radio text-[#10baee]"
-              />
-              <span className="text-white">Kurir Mobil</span>
-            </label>
+            </StandaloneSearchBox>
+            {!addressValid && (
+              <p className="mt-1 text-sm text-red-500">
+                Alamat harus dipilih dari suggestion
+              </p>
+            )}
           </div>
-        </div>
+        )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300">
-            Status
-          </label>
-          <div className="flex space-x-4 mt-1">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="status"
-                value="active"
-                checked={formData.status === "active"}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-                className="form-radio text-[#10baee]"
-              />
-              <span className="text-white">Active</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="status"
-                value="inactive"
-                checked={formData.status === "inactive"}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-                className="form-radio text-[#10baee]"
-              />
-              <span className="text-white">Inactive</span>
-            </label>
-          </div>
-        </div>
+        <RadioGroup
+          label="Role"
+          name="role"
+          options={[
+            { value: "regular", label: "Kurir Regular" },
+            { value: "special", label: "Kurir Khusus" },
+            { value: "car", label: "Kurir Mobil" },
+          ]}
+          selected={formData.role}
+          onChange={(value) => setFormData({ ...formData, role: value })}
+        />
 
+        <RadioGroup
+          label="Status"
+          name="status"
+          options={[
+            { value: "active", label: "Active" },
+            { value: "inactive", label: "Inactive" },
+          ]}
+          selected={formData.status}
+          onChange={(value) => setFormData({ ...formData, status: value })}
+        />
+
+        {/* Buttons */}
         <div className="flex mt-4 space-x-4">
           <button
             type="button"
-            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600"
             onClick={onClose}
+            className="w-1/2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md flex items-center justify-center"
           >
             <XCircle className="mr-2 h-5 w-5" />
             Cancel
           </button>
-
           <button
             type="submit"
-            className="w-1/2 flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#10baee] hover:bg-[#0aa2cc] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10baee] disabled:opacity-50"
             disabled={loading}
+            className="w-1/2 px-4 py-2 bg-[#10baee] hover:bg-[#0aa2cc] text-white rounded-md flex items-center justify-center disabled:opacity-50"
           >
             {loading ? (
-              <>
-                <Loader
-                  className="mr-2 h-5 w-5 animate-spin"
-                  aria-hidden="true"
-                />
-                Loading...
-              </>
+              <Loader className="mr-2 h-5 w-5 animate-spin" />
             ) : (
-              <>
-                <Save className="mr-2 h-5 w-5" />
-                Save
-              </>
+              <Save className="mr-2 h-5 w-5" />
             )}
+            Save
           </button>
         </div>
       </form>
@@ -247,3 +202,37 @@ const EditCourierForm = ({ onClose, id }) => {
 };
 
 export default EditCourierForm;
+
+const InputField = ({ label, type = "text", value, onChange }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-300">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#10baee]"
+      required
+    />
+  </div>
+);
+
+const RadioGroup = ({ label, name, options, selected, onChange }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-300">{label}</label>
+    <div className="flex space-x-4 mt-1">
+      {options.map((opt) => (
+        <label key={opt.value} className="flex items-center space-x-2">
+          <input
+            type="radio"
+            name={name}
+            value={opt.value}
+            checked={selected === opt.value}
+            onChange={() => onChange(opt.value)}
+            className="form-radio text-[#10baee]"
+          />
+          <span className="text-white">{opt.label}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+);
