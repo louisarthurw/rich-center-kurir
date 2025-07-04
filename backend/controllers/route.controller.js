@@ -26,11 +26,19 @@ export const generateRoute = async (req, res) => {
     data.pickup_details.forEach((pickup) => {
       const courierIds = pickup.courier_id.split(",").map((id) => parseInt(id));
       if (courierIds.includes(courier_id)) {
-        const volume =
-          pickup.length * pickup.width * pickup.height * pickup.total_address;
+        // Hitung jumlah delivery untuk order ini yang ditangani oleh kurir saat ini
+        const deliveryCount = data.delivery_details
+          .flat()
+          .filter(
+            (d) => d.order_id === pickup.order_id && d.courier_id === courier_id
+          ).length;
+
+        // Hitung volume total pickup sesuai jumlah pengiriman yang ditangani kurir ini
+        const volumePerItem = pickup.length * pickup.width * pickup.height;
+        const volume = volumePerItem * deliveryCount;
 
         pickupMap.set(pickup.order_id, {
-          volumePerItem: pickup.length * pickup.width * pickup.height,
+          volumePerItem,
           totalVolume: volume,
         });
 
@@ -40,7 +48,7 @@ export const generateRoute = async (req, res) => {
           lat: parseFloat(pickup.lat),
           long: parseFloat(pickup.long),
           order_id: pickup.order_id,
-          volume: volume,
+          volume,
         });
       }
     });
