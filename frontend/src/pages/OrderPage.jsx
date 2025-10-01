@@ -56,7 +56,7 @@ const OrderPage = ({ id }) => {
   // loading gmaps
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyDYXY6ngijPiwNtIyglgXHp0Uy7Qd6EJRg",
+    googleMapsApiKey: "AIzaSyBRHdO7vAzwE15Ycu2S0GmkDGm0Hn1nq4Q",
     libraries: ["places"],
   });
 
